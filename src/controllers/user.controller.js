@@ -22,6 +22,7 @@ const generateAccessAndRefreshToken = async (userId) => {
   }
 };
 
+
 const registerUser = asyncHandler(async (req, res) => {
   //get user details from frontend
   //validation
@@ -79,9 +80,11 @@ const registerUser = asyncHandler(async (req, res) => {
     // username: username?.toLowerCase() || "",
   });
 
+
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     newUser._id
   );
+
 
   const createdUser = await User.findById(newUser._id).select(
     "-password -refreshToken"
