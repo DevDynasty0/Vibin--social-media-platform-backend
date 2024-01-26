@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import { Following } from "../models/follow.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -78,7 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     // username: username?.toLowerCase() || "",
   });
-
+  console.log(newUser);
   const createdUser = await User.findById(newUser._id).select(
     "-password -refreshToken"
   );
@@ -219,10 +220,92 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-const getCurrentUser = asyncHandler(async (req, res, next) => {
+const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(new ApiResponse(200, req.user, "Current user fetched successfully"));
+    .send(new ApiResponse(200, req.user, "Current user fetched successfully"));
+});
+
+const getSuggestedUsers = asyncHandler(async (req, res) => {
+  const suggestedUsers = await User.aggregate([
+    { $match: { _id: { $ne: req.user._id } } },
+    { $sample: { size: 4 } },
+
+    {
+      $project: {
+        fullName: 1,
+        email: 1,
+        avatar: 1,
+      },
+    },
+  ]).exec();
+
+  if (!suggestedUsers || suggestedUsers.length === 0) {
+    throw new ApiError(501, "Suggested users not found.");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        suggestedUsers,
+        "Fetched suggested users succefully."
+      )
+    );
+});
+
+const followUser = asyncHandler(async (req, res) => {
+  const { profile, follower } = req.body;
+
+  if (!(follower || profile)) {
+    throw new ApiError(401, "Both follower and profile id requird.");
+  }
+  const isFollowExist = await Following.findOne({
+    $and: [{ profile }, { follower }],
+  });
+
+  if (isFollowExist) {
+    throw new ApiError(401, "Already following this profile.");
+  }
+
+  const newFollow = await Following.create({
+    profile,
+    follower,
+  });
+
+  const createdFollow = await Following.findById(newFollow._id);
+
+  if (!createdFollow) {
+    throw new ApiError(500, "Something Went wrong while following.");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, createdFollow, "Followed successfully"));
+});
+
+const getFollowings = asyncHandler(async (req, res) => {
+  console.log(req.user?._id);
+  const followings = await Following.find({ follower: req.user?._id })
+    .populate("profile")
+    .exec();
+  console.log(followings);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, followings, "Fetched users you're following."));
+});
+const getFollowers = asyncHandler(async (req, res) => {
+  console.log(req.user?._id);
+  const followers = await Following.find({ profile: req.user?._id })
+    .populate("follower")
+    .exec();
+  console.log(followers);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, followers, "Fetched users you're following."));
 });
 
 export {
@@ -231,4 +314,8 @@ export {
   logOutUser,
   refreshAccessToken,
   getCurrentUser,
+  getSuggestedUsers,
+  followUser,
+  getFollowings,
+  getFollowers,
 };
