@@ -308,6 +308,77 @@ const getFollowers = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, followers, "Fetched users you're following."));
 });
 
+const getUserProfile = asyncHandler(async (req, res) => {
+  const { _id } = req.params;
+  console.log(req.params);
+  if (!_id) {
+    throw new ApiError(400, "User id is missing");
+  }
+
+  const profile = await User.aggregate([
+    {
+      $match: {
+        _id: _id,
+      },
+    },
+    {
+      $lookup: {
+        from: "followings",
+        localField: "_id",
+        foreignField: "profile",
+        as: "followers",
+      },
+    },
+    {
+      $lookup: {
+        from: "followings",
+        localField: "_id",
+        foreignField: "follower",
+        as: "followingTo",
+      },
+    },
+    {
+      $addFields: {
+        followersCount: {
+          $size: "$followers",
+        },
+        followingCount: {
+          $size: "$followingTo",
+        },
+        isFollowing: {
+          $cond: {
+            if: { $in: [req.user?._id, "$followers.follower"] },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        fullName: 1,
+        email: 1,
+        followingCount: 1,
+        followersCount: 1,
+        isFollowing: 1,
+        avatar: 1,
+        coverImage: 1,
+      },
+    },
+  ]);
+
+  console.log(profile);
+
+  if (!profile.length) {
+    throw new ApiError(404, "Channel doesn't exist.");
+  }
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, profile[0], "User profiles fetched successfully.")
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -318,4 +389,5 @@ export {
   followUser,
   getFollowings,
   getFollowers,
+  getUserProfile,
 };

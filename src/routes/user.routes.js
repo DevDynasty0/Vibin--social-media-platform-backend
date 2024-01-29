@@ -9,6 +9,7 @@ import {
   followUser,
   getFollowings,
   getFollowers,
+  getUserProfile,
 } from "../controllers/user.controller.js";
 import { upload } from "../middelwares/multer.middleware.js";
 import { verifyToken } from "../middelwares/auth.middleware.js";
@@ -36,5 +37,5 @@ router.route("/suggested-users").get(verifyToken, getSuggestedUsers);
 router.route("/follow-user").post(verifyToken, followUser);
 router.route("/get-following-users").get(verifyToken, getFollowings);
 router.route("/get-followers").get(verifyToken, getFollowers);
-
+router.route("/:_id").get(verifyToken, getUserProfile);
 export default router;
