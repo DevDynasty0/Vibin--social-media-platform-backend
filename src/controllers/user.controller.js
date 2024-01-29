@@ -5,6 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import { Following } from "../models/follow.model.js";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -80,6 +81,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // username: username?.toLowerCase() || "",
   });
   console.log(newUser);
+
   const createdUser = await User.findById(newUser._id).select(
     "-password -refreshToken"
   );
@@ -154,8 +156,8 @@ const logOutUser = asyncHandler(async (req, res) => {
   const findUser = User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1,
       },
     },
     {
@@ -318,7 +320,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
   const profile = await User.aggregate([
     {
       $match: {
-        _id: _id,
+        _id: new mongoose.Types.ObjectId(_id),
       },
     },
     {
