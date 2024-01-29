@@ -23,6 +23,7 @@ const generateAccessAndRefreshToken = async (userId) => {
   }
 };
 
+
 const registerUser = asyncHandler(async (req, res) => {
   //get user details from frontend
   //validation
@@ -79,7 +80,15 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     // username: username?.toLowerCase() || "",
   });
+
   console.log(newUser);
+
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    newUser._id
+  );
+
+
   const createdUser = await User.findById(newUser._id).select(
     "-password -refreshToken"
   );
@@ -88,9 +97,22 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something Went wrong while registering.");
   }
 
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, "User registered successfully"));
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { createdUser, accessToken, refreshToken },
+        "User registered successfully"
+      )
+    );
 });
 
 const loginUser = asyncHandler(async (req, res) => {
