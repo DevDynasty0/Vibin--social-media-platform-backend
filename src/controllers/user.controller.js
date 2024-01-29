@@ -310,7 +310,7 @@ const getFollowers = asyncHandler(async (req, res) => {
 
 const getUserProfile = asyncHandler(async (req, res) => {
   const { _id } = req.params;
-  console.log(req.params);
+  console.log(_id);
   if (!_id) {
     throw new ApiError(400, "User id is missing");
   }
