@@ -24,6 +24,9 @@ const userSchema = new Schema(
     coverImage: {
       type: String, //cloudinary
     },
+    bio: {
+      type: String, //cloudinary
+    },
     likeHistory: {
       type: Schema.Types.ObjectId,
       ref: "Post",
