@@ -81,8 +81,6 @@ const registerUser = asyncHandler(async (req, res) => {
     // username: username?.toLowerCase() || "",
   });
 
-  console.log(newUser);
-
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     newUser._id
   );
@@ -107,7 +105,7 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { createdUser, accessToken, refreshToken },
+        { user: createdUser, accessToken, refreshToken },
         "User registered successfully"
       )
     );
@@ -219,7 +217,7 @@ const googleLogin = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { createdUser, accessToken, refreshToken },
+        { user: createdUser, accessToken, refreshToken },
         "User registered successfully unsing google."
       )
     );
@@ -287,7 +285,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         new ApiResponse(
           200,
           { accessToken, refreshToken: newRefreshToken },
-          "Access token refresh succesfull."
+          "Access token refresh success."
         )
       );
   } catch (error) {
