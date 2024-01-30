@@ -5,6 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import { Following } from "../models/follow.model.js";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -22,7 +23,6 @@ const generateAccessAndRefreshToken = async (userId) => {
     throw new ApiError(500, "Something Went Wrong while generating tokens.");
   }
 };
-
 
 const registerUser = asyncHandler(async (req, res) => {
   //get user details from frontend
@@ -83,11 +83,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
   console.log(newUser);
 
-
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     newUser._id
   );
-
 
   const createdUser = await User.findById(newUser._id).select(
     "-password -refreshToken"
@@ -172,12 +170,67 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
+const googleLogin = asyncHandler(async (req, res) => {
+  const decodedCredential = jwt.decode(req.body.credential);
+  const ifUserExist = await User.findOne({
+    email: decodedCredential?.email,
+  });
+
+  let newUser = null;
+
+  if (!ifUserExist) {
+    newUser = await User.create({
+      fullName: decodedCredential?.name,
+      avatar: decodedCredential?.picture || "",
+      email: decodedCredential?.email,
+      password: "googleUserPassword",
+      // username: username?.toLowerCase() || "",
+    });
+  } else {
+    newUser = ifUserExist;
+  }
+
+  console.log(newUser, "user from google login");
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    newUser._id
+  );
+
+  const createdUser = await User.findById(newUser._id).select(
+    "-password -refreshToken"
+  );
+
+  if (!createdUser) {
+    throw new ApiError(
+      500,
+      "Something Went wrong while signing in with google."
+    );
+  }
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(201)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { createdUser, accessToken, refreshToken },
+        "User registered successfully unsing google."
+      )
+    );
+});
+
 const logOutUser = asyncHandler(async (req, res) => {
   const findUser = User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1,
       },
     },
     {
@@ -249,18 +302,33 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 const getSuggestedUsers = asyncHandler(async (req, res) => {
-  const suggestedUsers = await User.aggregate([
-    { $match: { _id: { $ne: req.user._id } } },
-    { $sample: { size: 4 } },
+  const { _id } = req.user;
 
+  const following = await Following.find({ follower: _id }).select("profile");
+  const followingIds = following.map((f) => f.profile);
+
+  // Find all the users who are not in the following array
+  // const suggestedUsers = await User.find({
+  //   $and: [{ _id: { $nin: followingIds } }, { _id: { $ne: _id } }],
+  // })
+  //   .select("fullName avatar email")
+  //   .limit(4);
+
+  const suggestedUsers = await User.aggregate([
+    {
+      $match: {
+        $and: [{ _id: { $nin: followingIds } }, { _id: { $ne: _id } }],
+      },
+    },
     {
       $project: {
         fullName: 1,
-        email: 1,
         avatar: 1,
+        email: 1,
       },
     },
-  ]).exec();
+    { $sample: { size: 4 } },
+  ]);
 
   if (!suggestedUsers || suggestedUsers.length === 0) {
     throw new ApiError(501, "Suggested users not found.");
@@ -340,7 +408,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
   const profile = await User.aggregate([
     {
       $match: {
-        _id: _id,
+        _id: new mongoose.Types.ObjectId(_id),
       },
     },
     {
@@ -391,19 +459,18 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
   console.log(profile);
 
-  if (!profile.length) {
-    throw new ApiError(404, "Channel doesn't exist.");
+  if (!profile) {
+    throw new ApiError(404, "Profile doesn't exist.");
   }
   return res
     .status(200)
-    .json(
-      new ApiResponse(200, profile[0], "User profiles fetched successfully.")
-    );
+    .json(new ApiResponse(200, profile, "User profiles fetched successfully."));
 });
 
 export {
   registerUser,
   loginUser,
+  googleLogin,
   logOutUser,
   refreshAccessToken,
   getCurrentUser,
