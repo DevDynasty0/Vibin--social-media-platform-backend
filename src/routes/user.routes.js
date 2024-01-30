@@ -10,6 +10,7 @@ import {
   getFollowings,
   getFollowers,
   getUserProfile,
+  googleLogin,
 } from "../controllers/user.controller.js";
 import { upload } from "../middelwares/multer.middleware.js";
 import { verifyToken } from "../middelwares/auth.middleware.js";
@@ -30,6 +31,7 @@ router.route("/register").post(
 );
 
 router.route("/login").post(loginUser);
+router.route("/google-login").post(googleLogin);
 router.route("/logout").post(verifyToken, logOutUser);
 router.route("/current-user").get(verifyToken, getCurrentUser);
 router.route("/refresh-token").post(refreshAccessToken);

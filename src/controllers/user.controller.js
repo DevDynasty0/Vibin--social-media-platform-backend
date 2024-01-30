@@ -80,7 +80,12 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     // username: username?.toLowerCase() || "",
   });
+
   console.log(newUser);
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    newUser._id
+  );
 
   const createdUser = await User.findById(newUser._id).select(
     "-password -refreshToken"
@@ -90,9 +95,22 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something Went wrong while registering.");
   }
 
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
   return res
     .status(201)
-    .json(new ApiResponse(200, createdUser, "User registered successfully"));
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { createdUser, accessToken, refreshToken },
+        "User registered successfully"
+      )
+    );
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -148,6 +166,61 @@ const loginUser = asyncHandler(async (req, res) => {
           refreshToken,
         },
         "User logged in successfully."
+      )
+    );
+});
+
+const googleLogin = asyncHandler(async (req, res) => {
+  const decodedCredential = jwt.decode(req.body.credential);
+  const ifUserExist = await User.findOne({
+    email: decodedCredential?.email,
+  });
+
+  let newUser = null;
+
+  if (!ifUserExist) {
+    newUser = await User.create({
+      fullName: decodedCredential?.name,
+      avatar: decodedCredential?.picture || "",
+      email: decodedCredential?.email,
+      password: "googleUserPassword",
+      // username: username?.toLowerCase() || "",
+    });
+  } else {
+    newUser = ifUserExist;
+  }
+
+  console.log(newUser, "user from google login");
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    newUser._id
+  );
+
+  const createdUser = await User.findById(newUser._id).select(
+    "-password -refreshToken"
+  );
+
+  if (!createdUser) {
+    throw new ApiError(
+      500,
+      "Something Went wrong while signing in with google."
+    );
+  }
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(201)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { createdUser, accessToken, refreshToken },
+        "User registered successfully unsing google."
       )
     );
 });
@@ -384,6 +457,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 export {
   registerUser,
   loginUser,
+  googleLogin,
   logOutUser,
   refreshAccessToken,
   getCurrentUser,
