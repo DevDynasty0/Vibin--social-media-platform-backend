@@ -302,18 +302,33 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 const getSuggestedUsers = asyncHandler(async (req, res) => {
-  const suggestedUsers = await User.aggregate([
-    { $match: { _id: { $ne: req.user._id } } },
-    { $sample: { size: 4 } },
+  const { _id } = req.user;
 
+  const following = await Following.find({ follower: _id }).select("profile");
+  const followingIds = following.map((f) => f.profile);
+
+  // Find all the users who are not in the following array
+  // const suggestedUsers = await User.find({
+  //   $and: [{ _id: { $nin: followingIds } }, { _id: { $ne: _id } }],
+  // })
+  //   .select("fullName avatar email")
+  //   .limit(4);
+
+  const suggestedUsers = await User.aggregate([
+    {
+      $match: {
+        $and: [{ _id: { $nin: followingIds } }, { _id: { $ne: _id } }],
+      },
+    },
     {
       $project: {
         fullName: 1,
-        email: 1,
         avatar: 1,
+        email: 1,
       },
     },
-  ]).exec();
+    { $sample: { size: 4 } },
+  ]);
 
   if (!suggestedUsers || suggestedUsers.length === 0) {
     throw new ApiError(501, "Suggested users not found.");
@@ -444,14 +459,12 @@ const getUserProfile = asyncHandler(async (req, res) => {
 
   console.log(profile);
 
-  if (!profile.length) {
-    throw new ApiError(404, "Channel doesn't exist.");
+  if (!profile) {
+    throw new ApiError(404, "Profile doesn't exist.");
   }
   return res
     .status(200)
-    .json(
-      new ApiResponse(200, profile[0], "User profiles fetched successfully.")
-    );
+    .json(new ApiResponse(200, profile, "User profiles fetched successfully."));
 });
 
 export {
