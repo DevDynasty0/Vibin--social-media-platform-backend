@@ -11,6 +11,9 @@ import {
   getFollowers,
   getUserProfile,
   googleLogin,
+  changeAvatar,
+  changeCoverImage,
+  updateUserDetails,
 } from "../controllers/user.controller.js";
 import { upload } from "../middelwares/multer.middleware.js";
 import { verifyToken } from "../middelwares/auth.middleware.js";
@@ -40,4 +43,12 @@ router.route("/follow-user").post(verifyToken, followUser);
 router.route("/get-following-users").get(verifyToken, getFollowings);
 router.route("/get-followers").get(verifyToken, getFollowers);
 router.route("/:_id").get(verifyToken, getUserProfile);
+router
+  .route("/change-avatar")
+  .patch(verifyToken, upload.single("avatar"), changeAvatar);
+router
+  .route("/change-cover-image")
+  .patch(verifyToken, upload.single("coverImage"), changeCoverImage);
+router.route("/update-user-details").patch(verifyToken, updateUserDetails);
+
 export default router;

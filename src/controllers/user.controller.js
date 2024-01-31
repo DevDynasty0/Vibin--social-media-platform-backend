@@ -465,6 +465,98 @@ const getUserProfile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, profile, "User profiles fetched successfully."));
 });
 
+const changeAvatar = asyncHandler(async (req, res) => {
+  console.log(req.file, "files in change avatar");
+  const avatarLocalPath = req.file?.path || "";
+  if (!avatarLocalPath) {
+    throw new ApiError(401, "Avatar localpath not found for change.");
+  }
+
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  if (!avatar) {
+    throw new ApiError(400, "Avatar from cloudinary not found for change.");
+  }
+  const updateAvatar = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        avatar: avatar?.url,
+      },
+    },
+    { new: true }
+  ).select("-password");
+  if (!updateAvatar) {
+    throw new ApiError(501, "Something went wrong updting avatar change.");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updateAvatar, "Avatar updated successfully."));
+});
+const changeCoverImage = asyncHandler(async (req, res) => {
+  const coverImageLocalPath = req.file?.path || "";
+  if (!coverImageLocalPath) {
+    throw new ApiError(401, "Cover Image localpath not found for change.");
+  }
+
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+  if (!coverImage) {
+    throw new ApiError(
+      400,
+      "Cover Image from cloudinary not found for change."
+    );
+  }
+  const updateCoverImage = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        coverImage: coverImage?.url,
+      },
+    },
+    { new: true }
+  ).select("-password");
+  if (!updateCoverImage) {
+    throw new ApiError(501, "Something went wrong updting Cover Image  .");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updateCoverImage,
+        "Cover Image updated successfully."
+      )
+    );
+});
+
+//for text type details such as name, bio, contact, education etc
+const updateUserDetails = asyncHandler(async (req, res) => {
+  const data = req.body;
+  if (!data) {
+    throw new ApiError(400, "No data found to update .");
+  }
+  const updateDetails = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: {
+        ...data,
+      },
+    },
+    { new: true }
+  ).select("-password");
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        updateDetails,
+        "Account details updated successfully."
+      )
+    );
+});
+
 export {
   registerUser,
   loginUser,
@@ -477,4 +569,7 @@ export {
   getFollowings,
   getFollowers,
   getUserProfile,
+  changeAvatar,
+  changeCoverImage,
+  updateUserDetails,
 };
