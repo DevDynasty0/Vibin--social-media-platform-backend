@@ -1,11 +1,19 @@
 import { PostModel } from "../models/post.model.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const createPost = async (req, res) => {
   try {
-    const body = req.body;
-    const postModel = new PostModel(body);
-    const result = await postModel.save();
-    res.status(201).send(result);
+    console.log(req.body, "req body");
+    const {caption, contentType, user} = req.body;
+    console.log(req.file, "req");
+    // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
+    const postContentLocalPath = req.file?.path || "";
+    const postContent = await uploadOnCloudinary(postContentLocalPath);
+    console.log(postContentLocalPath, "postContentLocalPath");
+    console.log(postContent, "postContent");
+    // const postModel = new PostModel(body);
+    // const result = await postModel.save();
+    // res.status(201).send(result);
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: "Internal server error", success: false });
