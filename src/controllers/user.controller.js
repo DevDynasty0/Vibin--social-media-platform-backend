@@ -374,22 +374,18 @@ const followUser = asyncHandler(async (req, res) => {
 });
 
 const getFollowings = asyncHandler(async (req, res) => {
-  console.log(req.user?._id);
   const followings = await Following.find({ follower: req.user?._id })
     .populate("profile")
     .exec();
-  console.log(followings);
-
   return res
     .status(200)
     .json(new ApiResponse(200, followings, "Fetched users you're following."));
 });
+
 const getFollowers = asyncHandler(async (req, res) => {
-  console.log(req.user?._id);
   const followers = await Following.find({ profile: req.user?._id })
     .populate("follower")
     .exec();
-  console.log(followers);
 
   return res
     .status(200)

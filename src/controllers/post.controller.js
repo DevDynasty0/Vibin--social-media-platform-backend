@@ -1,3 +1,4 @@
+import { Following } from "../models/follow.model.js";
 import { PostModel } from "../models/post.model.js";
 
 const createPost = async (req, res) => {
@@ -13,19 +14,55 @@ const createPost = async (req, res) => {
 };
 
 const getPosts = async (req, res) => {
+  const userId = req.user?._id;
+
+  if (!userId) {
+    return res.status(400).send("User ID not available in the request.");
+  }
+
   try {
-    const result = await PostModel.find();
-    res.status(200).send(result);
+    const result = await PostModel.find({
+      "user.userId": userId,
+    });
+    return res.status(200).json(result);
   } catch (error) {
-    console.log(error);
-    res.status(500).send({ message: "Internal server error", success: false });
+    return res.status(500).send("Internal Server Error");
+  }
+};
+
+const getPostsFIds = async (req, res) => {
+  const userId = req.user?._id;
+
+  if (!userId) {
+    return res.status(400).send("User ID not available in the request.");
+  }
+
+  try {
+    const followings = await Following.find({ follower: userId })
+      .populate("profile")
+      .exec();
+
+    if (!followings || followings.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    const followingIds = followings.map((f) => f.profile?._id);
+    followingIds.push(userId);
+
+    const result = await PostModel.find({
+      "user.userId": { $in: followingIds },
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).send("Internal Server Error");
   }
 };
 
 const likeToggle = async (req, res) => {
   try {
     const postId = req.params.postId;
-    const existingEmail = req.body.email;
+    const existingEmail = req.user?.email;
     const post = await PostModel.findById(postId);
 
     if (!post) {
@@ -47,4 +84,17 @@ const likeToggle = async (req, res) => {
   }
 };
 
-export { createPost, getPosts, likeToggle };
+const deletePost = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const result = await PostModel.deleteOne({
+      _id: postId,
+      "user.userId": req.user?._id,
+    });
+    res.status(200).send(result);
+  } catch (error) {
+    res.status(500).send({ message: "Internal server error", success: false });
+  }
+};
+
+export { createPost, getPosts, likeToggle, deletePost, getPostsFIds };
