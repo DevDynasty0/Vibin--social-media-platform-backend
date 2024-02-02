@@ -5,19 +5,33 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 const createPost = async (req, res) => {
   try {
     console.log(req.body, "req body");
-    const {caption, contentType, user} = req.body;
-    console.log(req.file, "req");
+    const { caption, contentType, user } = req.body;
+    // console.log(req.file, "req");
     // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
     const postContentLocalPath = req.file?.path || "";
     const postContent = await uploadOnCloudinary(postContentLocalPath);
-    console.log(postContentLocalPath, "postContentLocalPath");
-    console.log(postContent, "postContent");
+    // console.log(postContentLocalPath, "postContentLocalPath");
+    console.log(postContent, "postContent cloudinary");
+    const newPost = await PostModel.create({
+      caption,
+      contentType,
+      user: {
+        userId: user.userId,
+        fullName: user.fullName,
+        avatar: user.avatar,
+      },
+      postContent: postContent?.url || "",
+    });
+    console.log(newPost);
     // const postModel = new PostModel(body);
-    // const result = await postModel.save();
+    // const result = await PostModel.save();
     // res.status(201).send(result);
+    return res.status(200).send(newPost);
   } catch (error) {
     console.log(error);
-    res.status(500).send({ message: "Internal server error", success: false });
+    return res
+      .status(500)
+      .send({ message: "Internal server error", success: false });
   }
 };
 
@@ -59,7 +73,18 @@ const getPostsFIds = async (req, res) => {
 
     const result = await PostModel.find({
       "user.userId": { $in: followingIds },
-    });
+    }).sort({ createdAt: -1 });
+
+    // const result = await PostModel.aggregate([
+    //   {
+    //     $match: {
+    //       $and: [
+    //         { "user.userId": { $in: followingIds } },
+    //         { "user.userId": new new mongoose.Types.ObjectId(userId)() },
+    //       ],
+    //     },
+    //   },
+    // ]);
 
     return res.status(200).json(result);
   } catch (error) {
