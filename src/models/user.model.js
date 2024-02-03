@@ -31,6 +31,21 @@ const userSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Post",
     },
+    gender: {
+      type: String,
+    },
+    dateOfBirth: {
+      type: String,
+    },
+    address: {
+      type: String,
+    },
+    contactNumber: {
+      type: Number,
+    },
+    religion: {
+      type: String,
+    },
     commentHistory: {
       type: Schema.Types.ObjectId,
       ref: "Post",
