@@ -6,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import { Following } from "../models/follow.model.js";
 import mongoose from "mongoose";
+import { Setting } from "../models/setting.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -92,6 +93,8 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!createdUser) {
     throw new ApiError(500, "Something Went wrong while registering.");
   }
+
+  await Setting.create({ userEmail : email });
 
   const options = {
     httpOnly: true,
