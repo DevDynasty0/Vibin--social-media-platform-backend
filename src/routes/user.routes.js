@@ -17,7 +17,11 @@ import {
 } from "../controllers/user.controller.js";
 import { upload } from "../middelwares/multer.middleware.js";
 import { verifyToken } from "../middelwares/auth.middleware.js";
+import { getSearchResult } from "../controllers/search.controller.js";
+
 const router = Router();
+
+router.route("/search").get(getSearchResult);
 
 router.route("/register").post(
   upload.fields([
@@ -36,7 +40,7 @@ router.route("/register").post(
 router.route("/login").post(loginUser);
 router.route("/google-login").post(googleLogin);
 router.route("/logout").post(verifyToken, logOutUser);
-router.route("/current-user").get(verifyToken, getCurrentUser);
+router.route("/current-user").post(getCurrentUser);
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/suggested-users").get(verifyToken, getSuggestedUsers);
 router.route("/follow-user").post(verifyToken, followUser);
@@ -49,6 +53,5 @@ router
 router
   .route("/change-cover-image")
   .patch(verifyToken, upload.single("coverImage"), changeCoverImage);
-router.route("/update-user-details").patch(verifyToken, updateUserDetails);
 
 export default router;
