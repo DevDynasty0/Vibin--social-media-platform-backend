@@ -6,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import { Following } from "../models/follow.model.js";
 import mongoose from "mongoose";
+import { PostModel } from "../models/post.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -294,9 +295,23 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+  const { _id } = req.body;
+  console.log(_id);
+  const user = await User.findById({ _id });
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    _id
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
   return res
     .status(200)
-    .send(new ApiResponse(200, req.user, "Current user fetched successfully"));
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(new ApiResponse(200, user, "Current user fetched successfully"));
 });
 
 const getSuggestedUsers = asyncHandler(async (req, res) => {
@@ -552,6 +567,26 @@ const updateUserDetails = asyncHandler(async (req, res) => {
       )
     );
 });
+
+// const getSearchResult = async (req, res) => {
+//   console.log(req, "req in search");
+//   try {
+//     console.log(req);
+//     const { q } = req.query;
+
+//     const users = await User.find({
+//       fullName: { $regex: new RegExp(q.toString(), "i") },
+//     });
+
+//     const posts = await PostModel.find({
+//       caption: { $regex: new RegExp(q, "i") },
+//     });
+
+//     return res.status(200).json({ users, posts });
+//   } catch (error) {
+//     console.log(error, "in getsearch result");
+//   }
+// };
 
 export {
   registerUser,
