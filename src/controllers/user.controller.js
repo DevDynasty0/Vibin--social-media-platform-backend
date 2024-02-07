@@ -352,19 +352,24 @@ const followUser = asyncHandler(async (req, res) => {
   if (!(follower || profile)) {
     throw new ApiError(401, "Both follower and profile id requird.");
   }
+
+  const findUser = await Following.find();
+  console.log(findUser, "_____________Find user");
+
   const isFollowExist = await Following.findOne({
     $and: [{ profile }, { follower }],
   });
 
   if (isFollowExist) {
-    throw new ApiError(401, "Already following this profile.");
+    // throw new ApiError(401, "Already following this profile.");
+    return res.status(200).send({message : "Already following this profile"})
   }
 
   const newFollow = await Following.create({
     profile,
     follower,
   });
-
+  
   const createdFollow = await Following.findById(newFollow._id);
 
   if (!createdFollow) {

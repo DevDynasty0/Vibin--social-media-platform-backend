@@ -1,80 +1,108 @@
+import { Block } from "../models/block.model.js";
+import { Following } from "../models/follow.model.js";
 import { Setting } from "../models/setting.model.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
-// const updateSetting = async (req, res) => {
-//   try {
-//     const data = req.body;
-//     const findUserSetting = await Setting.findOne(
-//       {
-//         "user._id": req.params.userId,
-//       },
-//     );
-//     if(findUserSetting){
-//         const updateUserSetting = await Setting.updateOne(
-//             {
-//               "user._id": req.params.userId,
-//             },
-//             {
-//               $set: {
-//                 ...data,
-//               },
-//             }
-
-//           );
-//           return res.status(200).send(updateUserSetting);
-//     } else{
-//         const result = await Setting.create(data)
-//         return res.status(201).send(result);
-//     }
-   
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send(error);
-//   }
-// };
 const updateSetting = async (req, res) => {
-    try {
-      const data = req.body;
-      const findUserSetting = await Setting.findOne({ userEmail: req.params.userEmail });
-      console.log("Hunululu",findUserSetting);
-      if (findUserSetting) {
-        const updateUserSetting = await Setting.findOneAndUpdate(
-          { userEmail: req.params.userEmail },
-          { $set: { ...data } },
-          { new: true }
-        );
-  
-        return res.status(200).send({ message: "Setting updated successfully", data: updateUserSetting });
-      } else {
-        const newSetting = await Setting.create(data);
-        return res.status(201).send({ message: "New setting created", data: newSetting });
-      }
-  
-    } catch (error) {
-      console.error(error);
-      return res.status(500).send({ message: "Internal Server Error", error: error.message });
+  try {
+    const data = req.body;
+    const findUserSetting = await Setting.findOne({
+      userEmail: req.params.userEmail,
+    });
+    if (findUserSetting) {
+      const updateUserSetting = await Setting.findOneAndUpdate(
+        { userEmail: req.params.userEmail },
+        { $set: { ...data } },
+        { new: true }
+      );
+      console.log(updateUserSetting, "Updated successfully");
+
+      return res
+        .status(200)
+        .send({
+          message: "Setting updated successfully",
+          data: updateUserSetting,
+        });
+    } else {
+      const newSetting = await Setting.create(data);
+      return res
+        .status(201)
+        .send({ message: "New setting created", data: newSetting });
     }
-  };
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ message: "Internal Server Error", error: error.message });
+  }
+};
+
+
+const getSetting = async (req, res) => {
+  try {
+    const userSettingRes = await Setting.findOne(
+      { userEmail: req.params.userEmail },
+      { posts: 1, likes: 1, comments: 1, _id: 0 }
+    );
+    
+    return res.status(200).send(userSettingRes);
+    
+  } catch (error) {
+    return res.status(500).send(error);
+  }
+
   
+};
 
-const getSetting = async(req, res) => {
-    try {    
-        const userSettingRes = await Setting.findOne({userEmail: req.params.userEmail});
-        console.log(userSettingRes, "ajfafokja;f");
-        return res.status(200).send(userSettingRes); 
-    } catch (error) {
-        return res.status(500).send(error);
+const unFollowUser = async (req, res) => {
+  const { profile, follower } = req.body;
+
+  if (!(follower || profile)) {
+    throw new ApiError(401, "Both follower and profile id required.");
+  }
+
+  const deleteFollow = await Following.deleteOne({ follower, profile });
+  console.log(deleteFollow);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, deleteFollow, "unfollowed successfully"));
+};
+
+
+const blockUser = async (req, res) => {
+  try {
+    const { blockedPerson, blockedBy } = req.body;
+
+    const blockedUserRes = await Block.create({ blockedPerson, blockedBy });
+
+    console.log(blockedUserRes, "Blocked user"); 
+    
+    if(blockedUserRes?._id){
+      const deleteFollow = await Following.deleteOne({ follower:blockedBy, profile:blockedPerson });
+    console.log(deleteFollow);
     }
-}
 
-// const deleteSetting = async(req, res) => {
-//     try {
-//         const deletes = await Setting.deleteMany({_id : req.params.id});
-//         const sayed = await Setting.find();
-//         console.log(sayed);
-//         return res.status(200).send(deletes);
-//     } catch (error) {
-//         return res.status(500).send(error)
-//     }
-// }
+    return res
+      .status(200)
+      .json(new ApiResponse(200, blockedUserRes, "blocked successfully"));
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ message: "Internal Server Error", error: error.message });
+  }
+};
 
-export { updateSetting, getSetting };
+const getBlockedUsers = async (req, res) => {
+ try {
+  const blockedUsers = await Block.find({ blockedBy: req.params.userId })
+  .populate("blockedPerson")
+    .exec();
+    console.log(blockedUsers);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, blockedUsers, "Fetched users blocked"));
+ } catch (error) {
+  console.log(error);
+ }
+};
+
+export { updateSetting, getSetting, unFollowUser, blockUser, getBlockedUsers };

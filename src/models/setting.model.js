@@ -8,15 +8,15 @@ const settingSchema = new Schema(
     },
     posts: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     likes: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     comments: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
   { timestamps: true }
