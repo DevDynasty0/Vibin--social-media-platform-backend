@@ -442,11 +442,17 @@ const getUserProfile = asyncHandler(async (req, res) => {
       $project: {
         fullName: 1,
         email: 1,
+        extraEmail:1,
+        address:1,
+        dob:1,
+        university:1,
         followingCount: 1,
         followersCount: 1,
         isFollowing: 1,
         avatar: 1,
         coverImage: 1,
+        bio:1,
+        religion:1
       },
     },
   ]);
@@ -458,7 +464,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
   }
   return res
     .status(200)
-    .json(new ApiResponse(200, profile, "User profiles fetched successfully."));
+    .json(new ApiResponse(200, profile[0], "User profiles fetched successfully."));
 });
 
 const changeAvatar = asyncHandler(async (req, res) => {
@@ -539,9 +545,10 @@ const updateUserDetails = asyncHandler(async (req, res) => {
         ...data,
       },
     },
-    { new: true }
-  ).select("-password");
+    { new: true },
 
+  ).select("-password");
+console.log(updateDetails);
   return res
     .status(200)
     .json(

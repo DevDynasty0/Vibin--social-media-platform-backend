@@ -17,6 +17,27 @@ const userSchema = new Schema(
       trim: true,
       index: true,
     },
+    dob:{
+      type:Date,
+      trim: true,
+    },
+    university:{
+      type: String,
+      trim: true,
+    },
+    address:{
+      type: String,
+      trim: true,
+    },
+    extraEmail:{
+      type: String,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    religion:{
+      type: String,
+    },
     avatar: {
       type: String, //cloudinary url
       // required: true,
