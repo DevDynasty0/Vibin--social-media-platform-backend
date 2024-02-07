@@ -41,6 +41,8 @@ const userSchema = new Schema(
     avatar: {
       type: String, //cloudinary url
       // required: true,
+      default:
+        "https://res.cloudinary.com/dsfyrjd8b/image/upload/v1707303580/by2cegfudppucnxbwvun.png",
     },
     coverImage: {
       type: String, //cloudinary
@@ -51,6 +53,21 @@ const userSchema = new Schema(
     likeHistory: {
       type: Schema.Types.ObjectId,
       ref: "Post",
+    },
+    gender: {
+      type: String,
+    },
+    dateOfBirth: {
+      type: String,
+    },
+    address: {
+      type: String,
+    },
+    contactNumber: {
+      type: Number,
+    },
+    religion: {
+      type: String,
     },
     commentHistory: {
       type: Schema.Types.ObjectId,
