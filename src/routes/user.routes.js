@@ -47,6 +47,7 @@ router.route("/follow-user").post(verifyToken, followUser);
 router.route("/get-following-users").get(verifyToken, getFollowings);
 router.route("/get-followers").get(verifyToken, getFollowers);
 router.route("/:_id").get(verifyToken, getUserProfile);
+router.route("/update-user-details").patch(verifyToken, updateUserDetails);
 router
   .route("/change-avatar")
   .patch(verifyToken, upload.single("avatar"), changeAvatar);
