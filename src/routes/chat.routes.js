@@ -12,7 +12,7 @@ const chatRouter = Router();
 chatRouter.route("/conversations/:userId").get(getConversations);
 chatRouter.route("/messages/:userId/:conversationId").get(getMessages);
 chatRouter.route("/message").post(createMessage);
-chatRouter.route("/message").delete(deleteMessage);
+chatRouter.route("/:userId/:msgId").delete(deleteMessage);
 
 // these for test purposes
 chatRouter.route("/message").get(getTestMessages);

@@ -3,7 +3,8 @@ import mongoose, { Schema, ObjectId } from "mongoose";
 const messageSchema = new Schema(
   {
     conversationId: {
-      type: ObjectId,
+      type: Schema.Types.ObjectId,
+      ref: "Conversation",
       required: true,
     },
     status: {
@@ -12,12 +13,12 @@ const messageSchema = new Schema(
       default: "sent",
     },
     sender: {
-      type: ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     receiver: {
-      type: ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },

@@ -296,7 +296,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   const { _id } = req.body;
-  console.log(_id);
+  // console.log(_id);
   const user = await User.findById({ _id });
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
