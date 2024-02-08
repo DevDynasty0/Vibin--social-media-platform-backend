@@ -457,6 +457,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       $project: {
         fullName: 1,
         email: 1,
+        userName:1,
         extraEmail:1,
         address:1,
         dob:1,
@@ -467,7 +468,8 @@ const getUserProfile = asyncHandler(async (req, res) => {
         avatar: 1,
         coverImage: 1,
         bio:1,
-        religion:1
+        religion:1,
+        contactNumber:1,
       },
     },
   ]);
