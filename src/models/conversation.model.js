@@ -1,4 +1,4 @@
-import mongoose, { Schema, ObjectId } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 // conversation body should be looks like this
 //  {
@@ -16,7 +16,7 @@ import mongoose, { Schema, ObjectId } from "mongoose";
 const conversationSchema = new Schema(
   {
     participants: {
-      type: [{ type: ObjectId, ref: "User" }],
+      type: [{ type: Schema.Types.ObjectId, ref: "User" }],
       validate: {
         validator: function (v) {
           return v.length <= 2;

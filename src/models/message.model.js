@@ -1,9 +1,9 @@
-import mongoose, { Schema, ObjectId } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const messageSchema = new Schema(
   {
     conversationId: {
-      type: ObjectId,
+      type: Schema.Types.ObjectId,
       required: true,
     },
     status: {
@@ -12,12 +12,12 @@ const messageSchema = new Schema(
       default: "sent",
     },
     sender: {
-      type: ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     receiver: {
-      type: ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },

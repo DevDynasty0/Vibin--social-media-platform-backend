@@ -1,6 +1,7 @@
 import { ConversationModel } from "../models/conversation.model.js";
 import { MessageModel } from "../models/message.model.js";
 
+// The createMessage controller creates conversation with message for first request, for second request it's create a new message only if the request comes from the same or existing participants.
 const createMessage = async (req, res) => {
   try {
     const { conversation, message } = req.body;
@@ -8,7 +9,7 @@ const createMessage = async (req, res) => {
       participants: { $all: conversation.participants },
     });
 
-    // checking conversation existence for create message
+    // checking conversation existence for creating new message
     if (isExist?._id) {
       const result = await MessageModel.create({
         ...message,
@@ -186,10 +187,61 @@ const getMessages = async (req, res) => {
   }
 };
 
+const deleteConversation = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const conversationId = req.params.conversationId;
+
+    const conResult = await ConversationModel.findById({
+      _id: conversationId,
+    });
+
+    if (conResult?.participants[0] === userId) {
+      await ConversationModel.updateOne(
+        {
+          _id: conversationId,
+        },
+        {
+          delPart1Msgs: true,
+        }
+      );
+
+      await MessageModel.updateMany({ conversationId }, { delPart1Msg: true });
+
+      return res.status(200).send({
+        status: "success",
+        success: true,
+      });
+    } else if (conResult?.participants[1] === userId) {
+      await ConversationModel.updateOne(
+        {
+          _id: conversationId,
+        },
+        {
+          delPart2Msgs: true,
+        }
+      );
+
+      await MessageModel.updateMany({ conversationId }, { delPart2Msg: true });
+      return res.status(200).send({
+        status: "success",
+        success: true,
+      });
+    }
+
+    return res.status(404).send({
+      status: "failed",
+      success: false,
+    });
+  } catch (error) {
+    return res.status(500).send({ status: false, error: error });
+  }
+};
+
 const deleteMessage = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const msgId = req.params.msgId;
+    const msgId = req.params.messageId;
 
     const msgResult = await MessageModel.findById({
       _id: msgId,
@@ -270,6 +322,7 @@ export {
   createMessage,
   getConversations,
   getMessages,
+  deleteConversation,
   deleteMessage,
   deleteTestMessage,
   getTestMessages,
