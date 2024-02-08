@@ -105,4 +105,18 @@ const getBlockedUsers = async (req, res) => {
  }
 };
 
-export { updateSetting, getSetting, unFollowUser, blockUser, getBlockedUsers };
+const unBlockUser = async (req, res) => {
+  const { blockedPerson, blockedBy } = req.body;
+
+  if (!(blockedPerson || blockedBy)) {
+    throw new ApiError(401, "Both blockedPerson and blockedBy id required.");
+  }
+
+  const unBlockRes = await Block.deleteOne({ blockedPerson, blockedBy });
+  console.log(unBlockRes);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, unBlockRes, "Unblock successfully"));
+};
+
+export { updateSetting, getSetting, unFollowUser, blockUser, getBlockedUsers, unBlockUser };
