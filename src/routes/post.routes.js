@@ -13,7 +13,7 @@ import { verifyToken } from "../middelwares/auth.middleware.js";
 
 const postRouter = Router();
 
-postRouter.route("/post").post(upload.single("postContent"), createPost);
+postRouter.route("/post").post( verifyToken , upload.single("postContent"), createPost);
 postRouter.route("/delete-post/:postId").delete(verifyToken, deletePost);
 postRouter.route("/posts-by-userId").get(verifyToken, getPosts);
 postRouter.route("/get-followings-posts").get(verifyToken, getPostsFIds);
