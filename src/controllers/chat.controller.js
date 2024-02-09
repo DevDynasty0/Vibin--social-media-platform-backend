@@ -146,10 +146,63 @@ const getConversations = async (req, res) => {
   }
 };
 
+/////////////////////modified get messages
+
+// const getMessages = async (req, res) => {
+//   try {
+//     const userId = req.params.userId;
+//     const conversationId = req.params.conversationId;
+
+//     const conversation = await ConversationModel.findOne({
+//       _id: conversationId,
+//       participants: { $in: [userId] }, // Ensure that the conversation includes the user
+//     });
+
+//     if (!conversation) {
+//       return res.status(404).send({
+//         status: "failed",
+//         success: false,
+//         message: "Conversation not found or user is not a participant.",
+//       });
+//     }
+
+//     const userIndex = conversation.participants.indexOf(userId);
+//     console.log("userindex", userIndex);
+//     let messages = [];
+//     if (userIndex === 0) {
+//       const query = {
+//         conversationId: conversationId,
+//         // [`delPart${userIndex + 1}Msg`]: false, // Use userIndex to determine which participant's messages to retrieve
+//         delPart1Msg: false, // Use userIndex to determine which participant's messages to retrieve
+//       };
+//       messages = await MessageModel.find(query);
+//       console.log("messages inside userindex 0");
+//     }
+//     if (userIndex === 1) {
+//       const query = {
+//         conversationId: conversationId,
+//         // [`delPart${userIndex + 1}Msg`]: false, // Use userIndex to determine which participant's messages to retrieve
+//         delPart2Msg: false, // Use userIndex to determine which participant's messages to retrieve
+//       };
+//       messages = await MessageModel.find(query);
+//       console.log("messages inside userindex 1");
+//     }
+
+//     return res.status(200).send({
+//       messages: messages,
+//       status: "success",
+//       success: true,
+//     });
+//   } catch (error) {
+//     return res.status(500).send({ status: false, error: error.message });
+//   }
+// };
+
 const getMessages = async (req, res) => {
   try {
     const userId = req.params.userId;
     const conversationId = req.params.conversationId;
+    console.log(userId, "user id", conversationId, "convo id");
 
     const result = await ConversationModel.findOne({
       _id: conversationId,
@@ -160,6 +213,7 @@ const getMessages = async (req, res) => {
         conversationId: conversationId,
         delPart1Msg: false,
       });
+      console.log(partOneMessages, "part1");
 
       return res.status(200).send({
         messages: partOneMessages,
@@ -171,17 +225,19 @@ const getMessages = async (req, res) => {
         conversationId: conversationId,
         delPart2Msg: false,
       });
+      console.log(partTwoMessages, "part2");
+
       return res.status(200).send({
         messages: partTwoMessages,
         status: "success",
         success: true,
       });
+    } else {
+      return res.status(404).send({
+        status: "failed",
+        success: false,
+      });
     }
-
-    return res.status(404).send({
-      status: "failed",
-      success: false,
-    });
   } catch (error) {
     return res.status(500).send({ status: false, error: error });
   }
