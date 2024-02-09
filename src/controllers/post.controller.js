@@ -20,6 +20,7 @@ const createPost = async (req, res) => {
         fullName: user.fullName,
         avatar: user.avatar,
       },
+      realUser: user.userId,
       postContent: postContent?.url || "",
     });
     console.log(newPost);
@@ -73,7 +74,7 @@ const getPostsFIds = async (req, res) => {
 
     const result = await PostModel.find({
       "user.userId": { $in: followingIds },
-    }).sort({ createdAt: -1 });
+    }).sort({ createdAt: -1 }).populate("realUser");
 
     // const result = await PostModel.aggregate([
     //   {

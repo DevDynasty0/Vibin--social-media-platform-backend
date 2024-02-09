@@ -7,6 +7,12 @@ const postSchema = new Schema(
       fullName: { type: String, required: true },
       avatar: { type: String },
     },
+    realUser:{
+      
+        type: Schema.Types.ObjectId,
+        ref: "User"
+      
+    },
     caption: {
       type: String,
       required: true,
