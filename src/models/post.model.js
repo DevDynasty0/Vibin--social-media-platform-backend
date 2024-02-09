@@ -1,23 +1,21 @@
-import mongoose, { Schema, ObjectId } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const postSchema = new Schema(
   {
     user: {
-      userId: { type: ObjectId, required: true },
-      fullName: { type: String, required: true },
-      avatar: { type: String },
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
     caption: {
       type: String,
       required: true,
     },
     postContent: {
-      type: String
+      type: String,
     },
     contentType: {
-      type: String
+      type: String,
     },
-   
     likes: [String],
     share: {
       type: Number,
