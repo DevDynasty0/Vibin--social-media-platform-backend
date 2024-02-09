@@ -1,9 +1,10 @@
-import mongoose, { Schema, ObjectId } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const messageSchema = new Schema(
   {
     conversationId: {
       type: Schema.Types.ObjectId,
+
       ref: "Conversation",
       required: true,
     },

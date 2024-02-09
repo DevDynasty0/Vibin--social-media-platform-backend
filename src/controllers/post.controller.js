@@ -36,7 +36,7 @@ const createPost = async (req, res) => {
 };
 
 const getPosts = async (req, res) => {
-  const userId = req.user?._id;
+  const userId = req.params.userId;
 
   if (!userId) {
     return res.status(400).send("User ID not available in the request.");

@@ -6,8 +6,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import { Following } from "../models/follow.model.js";
 import mongoose from "mongoose";
-import { PostModel } from "../models/post.model.js";
 
+import { Setting } from "../models/setting.model.js";
+
+import { PostModel } from "../models/post.model.js";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -93,6 +95,8 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!createdUser) {
     throw new ApiError(500, "Something Went wrong while registering.");
   }
+
+  await Setting.create({ userEmail : email });
 
   const options = {
     httpOnly: true,
@@ -364,19 +368,24 @@ const followUser = asyncHandler(async (req, res) => {
   if (!(follower || profile)) {
     throw new ApiError(401, "Both follower and profile id requird.");
   }
+
+  const findUser = await Following.find();
+  console.log(findUser, "_____________Find user");
+
   const isFollowExist = await Following.findOne({
     $and: [{ profile }, { follower }],
   });
 
   if (isFollowExist) {
-    throw new ApiError(401, "Already following this profile.");
+    // throw new ApiError(401, "Already following this profile.");
+    return res.status(200).send({message : "Already following this profile"})
   }
 
   const newFollow = await Following.create({
     profile,
     follower,
   });
-
+  
   const createdFollow = await Following.findById(newFollow._id);
 
   if (!createdFollow) {
@@ -457,11 +466,19 @@ const getUserProfile = asyncHandler(async (req, res) => {
       $project: {
         fullName: 1,
         email: 1,
+        userName:1,
+        extraEmail:1,
+        address:1,
+        dob:1,
+        university:1,
         followingCount: 1,
         followersCount: 1,
         isFollowing: 1,
         avatar: 1,
         coverImage: 1,
+        bio:1,
+        religion:1,
+        contactNumber:1,
       },
     },
   ]);
@@ -473,7 +490,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
   }
   return res
     .status(200)
-    .json(new ApiResponse(200, profile, "User profiles fetched successfully."));
+    .json(new ApiResponse(200, profile[0], "User profiles fetched successfully."));
 });
 
 const changeAvatar = asyncHandler(async (req, res) => {
@@ -554,9 +571,10 @@ const updateUserDetails = asyncHandler(async (req, res) => {
         ...data,
       },
     },
-    { new: true }
-  ).select("-password");
+    { new: true },
 
+  ).select("-password");
+console.log(updateDetails);
   return res
     .status(200)
     .json(
