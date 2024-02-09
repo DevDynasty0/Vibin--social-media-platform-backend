@@ -155,7 +155,7 @@ const getMessages = async (req, res) => {
       _id: conversationId,
     });
 
-    if (result?.participants[0] === userId) {
+    if (result?.participants[0] == userId) {
       const partOneMessages = await MessageModel.find({
         conversationId: conversationId,
         delPart1Msg: false,
@@ -166,7 +166,7 @@ const getMessages = async (req, res) => {
         status: "success",
         success: true,
       });
-    } else if (result?.participants[1] === req.userId) {
+    } else if (result?.participants[1] == req.userId) {
       const partTwoMessages = await MessageModel.find({
         conversationId: conversationId,
         delPart2Msg: false,
@@ -196,7 +196,7 @@ const deleteConversation = async (req, res) => {
       _id: conversationId,
     });
 
-    if (conResult?.participants[0] === userId) {
+    if (conResult?.participants[0] == userId) {
       await ConversationModel.updateOne(
         {
           _id: conversationId,
@@ -212,7 +212,7 @@ const deleteConversation = async (req, res) => {
         status: "success",
         success: true,
       });
-    } else if (conResult?.participants[1] === userId) {
+    } else if (conResult?.participants[1] == userId) {
       await ConversationModel.updateOne(
         {
           _id: conversationId,
@@ -250,7 +250,7 @@ const deleteMessage = async (req, res) => {
       _id: msgResult?.conversationId,
     });
 
-    if (conResult?.participants[0] === userId) {
+    if (conResult?.participants[0] == userId) {
       // TODO: here I will delete from both side based on req.query
       const deletedMessage = await MessageModel.updateOne(
         {
@@ -264,7 +264,7 @@ const deleteMessage = async (req, res) => {
       return res.status(200).send({
         data: deletedMessage,
       });
-    } else if (conResult?.participants[1] === userId) {
+    } else if (conResult?.participants[1] == userId) {
       // TODO: here I will delete from both side based on req.query
       const deletedMessage = await MessageModel.updateOne(
         {
