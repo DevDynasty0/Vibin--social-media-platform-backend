@@ -11,15 +11,43 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
+    userName:{
+      type: String,
+      lowercase: true,
+      trim: true,
+    },
     fullName: {
       type: String,
       required: true,
       trim: true,
       index: true,
     },
+    dob:{
+      type:Date,
+      trim: true,
+    },
+    university:{
+      type: String,
+      trim: true,
+    },
+    address:{
+      type: String,
+      trim: true,
+    },
+    extraEmail:{
+      type: String,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    religion:{
+      type: String,
+    },
     avatar: {
       type: String, //cloudinary url
       // required: true,
+      default:
+        "https://res.cloudinary.com/dsfyrjd8b/image/upload/v1707303580/by2cegfudppucnxbwvun.png",
     },
     coverImage: {
       type: String, //cloudinary

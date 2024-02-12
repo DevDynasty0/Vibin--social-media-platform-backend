@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import { Following } from "../models/follow.model.js";
 import mongoose from "mongoose";
 import { Setting } from "../models/setting.model.js";
+import { PostModel } from "../models/post.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -297,9 +298,23 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+  const { _id } = req.body;
+  console.log(_id);
+  const user = await User.findById({ _id });
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    _id
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
   return res
     .status(200)
-    .send(new ApiResponse(200, req.user, "Current user fetched successfully"));
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(new ApiResponse(200, user, "Current user fetched successfully"));
 });
 
 const getSuggestedUsers = asyncHandler(async (req, res) => {
@@ -450,11 +465,19 @@ const getUserProfile = asyncHandler(async (req, res) => {
       $project: {
         fullName: 1,
         email: 1,
+        userName:1,
+        extraEmail:1,
+        address:1,
+        dob:1,
+        university:1,
         followingCount: 1,
         followersCount: 1,
         isFollowing: 1,
         avatar: 1,
         coverImage: 1,
+        bio:1,
+        religion:1,
+        contactNumber:1,
       },
     },
   ]);
@@ -466,7 +489,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
   }
   return res
     .status(200)
-    .json(new ApiResponse(200, profile, "User profiles fetched successfully."));
+    .json(new ApiResponse(200, profile[0], "User profiles fetched successfully."));
 });
 
 const changeAvatar = asyncHandler(async (req, res) => {
@@ -547,9 +570,10 @@ const updateUserDetails = asyncHandler(async (req, res) => {
         ...data,
       },
     },
-    { new: true }
-  ).select("-password");
+    { new: true },
 
+  ).select("-password");
+console.log(updateDetails);
   return res
     .status(200)
     .json(
@@ -560,6 +584,26 @@ const updateUserDetails = asyncHandler(async (req, res) => {
       )
     );
 });
+
+// const getSearchResult = async (req, res) => {
+//   console.log(req, "req in search");
+//   try {
+//     console.log(req);
+//     const { q } = req.query;
+
+//     const users = await User.find({
+//       fullName: { $regex: new RegExp(q.toString(), "i") },
+//     });
+
+//     const posts = await PostModel.find({
+//       caption: { $regex: new RegExp(q, "i") },
+//     });
+
+//     return res.status(200).json({ users, posts });
+//   } catch (error) {
+//     console.log(error, "in getsearch result");
+//   }
+// };
 
 export {
   registerUser,
