@@ -207,7 +207,6 @@ const getMessages = async (req, res) => {
     const result = await ConversationModel.findOne({
       _id: conversationId,
     });
-    console.log("participants", result.participants, "found convo result");
 
     if (result?.participants[0] == userId) {
       const partOneMessages = await MessageModel.find({
@@ -221,7 +220,7 @@ const getMessages = async (req, res) => {
         status: "success",
         success: true,
       });
-    } else if (result?.participants[1] == userId) {
+    } else if (result?.participants[1] == req.userId) {
       const partTwoMessages = await MessageModel.find({
         conversationId: conversationId,
         delPart2Msg: false,
@@ -253,7 +252,7 @@ const deleteConversation = async (req, res) => {
       _id: conversationId,
     });
 
-    if (conResult?.participants[0] === userId) {
+    if (conResult?.participants[0] == userId) {
       await ConversationModel.updateOne(
         {
           _id: conversationId,
@@ -269,7 +268,7 @@ const deleteConversation = async (req, res) => {
         status: "success",
         success: true,
       });
-    } else if (conResult?.participants[1] === userId) {
+    } else if (conResult?.participants[1] == userId) {
       await ConversationModel.updateOne(
         {
           _id: conversationId,

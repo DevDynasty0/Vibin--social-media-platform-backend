@@ -20,7 +20,6 @@ const createPost = async (req, res) => {
         fullName: user.fullName,
         avatar: user.avatar,
       },
-      realUser: user.userId,
       postContent: postContent?.url || "",
     });
     console.log(newPost);
@@ -45,8 +44,8 @@ const getPosts = async (req, res) => {
 
   try {
     const result = await PostModel.find({
-      "user.userId": userId,
-    });
+      user: userId,
+    }).populate("user");
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send("Internal Server Error");
@@ -55,7 +54,6 @@ const getPosts = async (req, res) => {
 
 const getPostsFIds = async (req, res) => {
   const userId = req.user?._id;
-
   if (!userId) {
     return res.status(400).send("User ID not available in the request.");
   }
@@ -65,16 +63,12 @@ const getPostsFIds = async (req, res) => {
       .populate("profile")
       .exec();
 
-    if (!followings || followings.length === 0) {
-      return res.status(200).json([]);
-    }
-
     const followingIds = followings.map((f) => f.profile?._id);
     followingIds.push(userId);
 
     const result = await PostModel.find({
       "user.userId": { $in: followingIds },
-    }).sort({ createdAt: -1 }).populate("realUser");
+    }).sort({ createdAt: -1 });
 
     // const result = await PostModel.aggregate([
     //   {
@@ -87,7 +81,7 @@ const getPostsFIds = async (req, res) => {
     //   },
     // ]);
 
-    return res.status(200).json(result);
+    return res.status(200).json(results);
   } catch (error) {
     return res.status(500).send("Internal Server Error");
   }
