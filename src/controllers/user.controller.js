@@ -6,9 +6,10 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import { Following } from "../models/follow.model.js";
 import mongoose from "mongoose";
-import { Setting } from "../models/setting.model.js";
-import { PostModel } from "../models/post.model.js";
 
+import { Setting } from "../models/setting.model.js";
+
+import { PostModel } from "../models/post.model.js";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -299,7 +300,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   const { _id } = req.body;
-  console.log(_id);
+  // console.log(_id);
   const user = await User.findById({ _id });
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
@@ -605,6 +606,18 @@ console.log(updateDetails);
 //   }
 // };
 
+const getUserRole = async(req, res) => {
+  let isAdmin = false;
+  const findUser = await User.findOne({ _id: req.body.id});
+  if(findUser?.isAdmin){
+    isAdmin = true
+  }
+
+  res.send({isAdmin})
+
+}
+
+
 export {
   registerUser,
   loginUser,
@@ -620,4 +633,5 @@ export {
   changeAvatar,
   changeCoverImage,
   updateUserDetails,
+  getUserRole
 };
