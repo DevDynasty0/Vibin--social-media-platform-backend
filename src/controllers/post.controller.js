@@ -5,7 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 const createPost = async (req, res) => {
   try {
     console.log(req.body, "req body");
-    const { caption, contentType, user } = req.body;
+    const { caption, contentType, user, postType } = req.body;
     // console.log(req.file, "req");
     // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
     const postContentLocalPath = req.file?.path || "";
@@ -15,11 +15,8 @@ const createPost = async (req, res) => {
     const newPost = await PostModel.create({
       caption,
       contentType,
-      user: {
-        userId: user.userId,
-        fullName: user.fullName,
-        avatar: user.avatar,
-      },
+      postType,
+      user,
       postContent: postContent?.url || "",
     });
     console.log(newPost);
@@ -32,6 +29,23 @@ const createPost = async (req, res) => {
     return res
       .status(500)
       .send({ message: "Internal server error", success: false });
+  }
+};
+
+const createPostShare = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const post = await PostModel.findById({ _id: postId });
+    if (!post) {
+      res.status(404).send({ error: "Document not found" });
+      return;
+    }
+    post.shares += 1;
+    const result = await post.save();
+    res.status(200).send(result);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Internal server error", success: false });
   }
 };
 
@@ -125,4 +139,11 @@ const deletePost = async (req, res) => {
   }
 };
 
-export { createPost, getPosts, likeToggle, deletePost, getPostsFIds };
+export {
+  createPost,
+  getPosts,
+  likeToggle,
+  deletePost,
+  getPostsFIds,
+  createPostShare,
+};
