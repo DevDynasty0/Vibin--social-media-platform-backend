@@ -17,8 +17,13 @@ const postSchema = new Schema(
       type: String,
     },
     likes: [String],
-    share: {
+    shares: {
       type: Number,
+      default: 0,
+    },
+    comments: {
+      type: Number,
+      default: 0,
     },
   },
   {
