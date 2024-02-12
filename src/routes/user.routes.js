@@ -54,6 +54,5 @@ router
 router
   .route("/change-cover-image")
   .patch(verifyToken, upload.single("coverImage"), changeCoverImage);
-router
-.route("/update-user-details").patch(verifyToken, updateUserDetails);
+
 export default router;

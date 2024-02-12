@@ -34,4 +34,20 @@ const getCommentsByPostId = async (req, res) => {
     .json(new ApiResponse(200, result, "Comments fetched successfully"));
 };
 
-export { createComment, getCommentsByPostId };
+const deleteCommentsById = async (req, res) => {
+  
+  const commentId = req.params.commentId;
+  const result = await CommentModel.deleteOne({ _id:commentId })
+  const postData = await PostModel.findOne({ _id: req.params.postId });
+  const commentnum=await PostModel.updateOne(
+    { _id: req.params.postId },
+    { comments: postData.comments - 1 }
+  );
+  console.log('cccc',commentnum);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, result, "Comments delelt successfully"));
+};
+
+
+export { createComment, getCommentsByPostId,deleteCommentsById };
