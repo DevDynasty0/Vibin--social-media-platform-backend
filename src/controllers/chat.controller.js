@@ -73,6 +73,7 @@ const createMessage = async (req, res) => {
 const getConversations = async (req, res) => {
   try {
     const userId = req.params.userId;
+    console.log(userId, "get convo controller");
 
     // conversations finding solution one
     const results = await ConversationModel.find({
@@ -95,7 +96,47 @@ const getConversations = async (req, res) => {
           delPart2Msgs: false,
         },
       ],
-    });
+    })
+      .populate({
+        path: "participants",
+        select: "fullName avatar",
+      })
+      .select("participants");
+
+    // const results = await ConversationModel.aggregate([
+    //   {
+    //     $match: {
+    //       $or: [
+    //         {
+    //           participants: {
+    //             $elemMatch: {
+    //               $eq: userId,
+    //             },
+    //           },
+    //           delPart1Msgs: false,
+    //         },
+    //         {
+    //           participants: {
+    //             $size: 2,
+    //             $elemMatch: {
+    //               $eq: userId,
+    //             },
+    //           },
+    //           delPart2Msgs: false,
+    //         },
+    //       ],
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 1,
+    //       participants: 1,
+    //       message: 1,
+    //     },
+    //   },
+    // ]);
+
+    console.log(results);
 
     // conversations finding solution two
     // const results = await ConversationModel.aggregate([
@@ -137,8 +178,8 @@ const getConversations = async (req, res) => {
     //   },
     // ]);
 
-    return res.status(404).send({
-      data: results,
+    return res.status(200).send({
+      results,
       success: true,
     });
   } catch (error) {
@@ -206,14 +247,23 @@ const getMessages = async (req, res) => {
 
     const result = await ConversationModel.findOne({
       _id: conversationId,
-    });
+    }).populate();
     console.log("participants", result.participants, "found convo result");
 
     if (result?.participants[0] == userId) {
       const partOneMessages = await MessageModel.find({
         conversationId: conversationId,
         delPart1Msg: false,
-      });
+      })
+        .populate({
+          path: "sender",
+          select: "fullName avatar ",
+        })
+        .populate({
+          path: "receiver",
+          select: "fullName avatar ",
+        })
+        .sort({ createdAt: 1 });
       console.log(partOneMessages, "part1");
 
       return res.status(200).send({
@@ -225,7 +275,9 @@ const getMessages = async (req, res) => {
       const partTwoMessages = await MessageModel.find({
         conversationId: conversationId,
         delPart2Msg: false,
-      });
+      })
+        .populate("sender receiver")
+        .sort({ createdAt: 1 });
       console.log(partTwoMessages, "part2");
 
       return res.status(200).send({
