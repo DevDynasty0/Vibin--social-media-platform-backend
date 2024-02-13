@@ -50,4 +50,29 @@ const deleteCommentsById = async (req, res) => {
 };
 
 
-export { createComment, getCommentsByPostId,deleteCommentsById };
+// edit comment
+const updateCommentById = async (req, res) => {
+  try {
+    const commentId = req.params.commentId;
+    const { content } = req.body;
+
+    // Find the comment by its ID and update its content
+    const updatedComment = await CommentModel.findByIdAndUpdate(
+      {_id:commentId},
+      { comment:content },
+      
+    );
+
+    if (!updatedComment) {
+      return res.status(404).json(new ApiResponse(404, {}, 'Comment not found'));
+    }
+
+    return res.status(200).json(new ApiResponse(200, updatedComment, 'Comment updated successfully'));
+  } catch (error) {
+    console.error('Error updating comment:', error);
+    return res.status(500).json(new ApiResponse(500, {}, 'Internal server error'));
+  }
+};
+
+
+export { createComment, getCommentsByPostId,deleteCommentsById,updateCommentById };
