@@ -96,7 +96,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something Went wrong while registering.");
   }
 
-  await Setting.create({ userEmail : email });
+  await Setting.create({ userEmail: email });
 
   const options = {
     httpOnly: true,
@@ -105,8 +105,14 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, {
+      ...options,
+      maxAge: 24 * 60 * 60 * 1000,
+    })
+    .cookie("refreshToken", refreshToken, {
+      ...options,
+      maxAge: 10 * 24 * 60 * 60 * 1000,
+    })
     .json(
       new ApiResponse(
         200,
@@ -158,8 +164,14 @@ const loginUser = asyncHandler(async (req, res) => {
   };
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, {
+      ...options,
+      maxAge: 24 * 60 * 60 * 1000,
+    })
+    .cookie("refreshToken", refreshToken, {
+      ...options,
+      maxAge: 10 * 24 * 60 * 60 * 1000,
+    })
     .json(
       new ApiResponse(
         200,
@@ -217,8 +229,14 @@ const googleLogin = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, {
+      ...options,
+      maxAge: 24 * 60 * 60 * 1000,
+    })
+    .cookie("refreshToken", refreshToken, {
+      ...options,
+      maxAge: 10 * 24 * 60 * 60 * 1000,
+    })
     .json(
       new ApiResponse(
         200,
@@ -299,23 +317,37 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-  const { _id } = req.body;
+  // const { _id } = req.body;
   // console.log(_id);
-  const user = await User.findById({ _id });
+  const user = await User.findById({ _id: req.user._id });
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
-    _id
+    req?.user?._id
   );
 
   const options = {
     httpOnly: true,
     secure: true,
   };
-  return res
-    .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-    .json(new ApiResponse(200, user, "Current user fetched successfully"));
+  return (
+    res
+      .status(200)
+      // .cookie("accessToken", accessToken, {
+      //   ...options,
+      //   maxAge: 24 * 60 * 60 * 1000,
+      // })
+      // .cookie("refreshToken", refreshToken, {
+      //   ...options,
+      //   maxAge: 10 * 24 * 60 * 60 * 1000,
+      // })
+      .json(
+        new ApiResponse(
+          200,
+          { user, accessToken },
+          "Current user fetched successfully"
+        )
+      )
+  );
 });
 
 const getSuggestedUsers = asyncHandler(async (req, res) => {
@@ -378,14 +410,14 @@ const followUser = asyncHandler(async (req, res) => {
 
   if (isFollowExist) {
     // throw new ApiError(401, "Already following this profile.");
-    return res.status(200).send({message : "Already following this profile"})
+    return res.status(200).send({ message: "Already following this profile" });
   }
 
   const newFollow = await Following.create({
     profile,
     follower,
   });
-  
+
   const createdFollow = await Following.findById(newFollow._id);
 
   if (!createdFollow) {
@@ -466,19 +498,19 @@ const getUserProfile = asyncHandler(async (req, res) => {
       $project: {
         fullName: 1,
         email: 1,
-        userName:1,
-        extraEmail:1,
-        address:1,
-        dob:1,
-        university:1,
+        userName: 1,
+        extraEmail: 1,
+        address: 1,
+        dob: 1,
+        university: 1,
         followingCount: 1,
         followersCount: 1,
         isFollowing: 1,
         avatar: 1,
         coverImage: 1,
-        bio:1,
-        religion:1,
-        contactNumber:1,
+        bio: 1,
+        religion: 1,
+        contactNumber: 1,
       },
     },
   ]);
@@ -490,7 +522,9 @@ const getUserProfile = asyncHandler(async (req, res) => {
   }
   return res
     .status(200)
-    .json(new ApiResponse(200, profile[0], "User profiles fetched successfully."));
+    .json(
+      new ApiResponse(200, profile[0], "User profiles fetched successfully.")
+    );
 });
 
 const changeAvatar = asyncHandler(async (req, res) => {
@@ -571,10 +605,9 @@ const updateUserDetails = asyncHandler(async (req, res) => {
         ...data,
       },
     },
-    { new: true },
-
+    { new: true }
   ).select("-password");
-console.log(updateDetails);
+  console.log(updateDetails);
   return res
     .status(200)
     .json(
@@ -606,6 +639,18 @@ console.log(updateDetails);
 //   }
 // };
 
+const getUserRole = async(req, res) => {
+  let isAdmin = false;
+  const findUser = await User.findOne({ _id: req.body.id});
+  if(findUser?.isAdmin){
+    isAdmin = true
+  }
+
+  res.send({isAdmin})
+
+}
+
+
 export {
   registerUser,
   loginUser,
@@ -621,4 +666,5 @@ export {
   changeAvatar,
   changeCoverImage,
   updateUserDetails,
+  getUserRole
 };

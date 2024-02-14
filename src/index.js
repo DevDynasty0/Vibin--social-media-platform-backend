@@ -48,18 +48,19 @@ connectDB()
       });
 
       socket.on("new message", (newMessageRecieved) => {
+        console.log(newMessageRecieved, "newMessageRecievedssssssss");
         //  /remeber to remove this
-        socket
-          .in(newMessageRecieved._id)
-          .emit("message recieved", newMessageRecieved);
+        // socket
+        //   .in(newMessageRecieved._id)
+        //   .emit("message recieved", newMessageRecieved);
 
         //we will need this for later
-        // let { conversation } = newMessageRecieved;
-        // if (!conversation.participants)
-        //   return console.log("conversation.participants not defined");
+        let { receiver } = newMessageRecieved;
+        if (!receiver) return console.log("receiver not defined");
+        socket.in(receiver._id).emit("message recieved", newMessageRecieved);
         // conversation.participants.forEach((user) => {
-        //   if (user._id == newMessageRecieved.messege.sender) return;
-        //   socket.in(user._id).emit("message recieved", newMessageRecieved);
+        //   if (user._id == message.sender) return;
+        //   socket.in(receiver._id).emit("message recieved", newMessageRecieved);
         // });
       });
     });
