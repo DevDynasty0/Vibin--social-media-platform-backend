@@ -100,9 +100,11 @@ const getPostsFIds = async (req, res) => {
     const followingIds = followings.map((f) => f.profile?._id);
     followingIds.push(userId);
 
-    const result = await PostModel.find({
-      "user.userId": { $in: followingIds },
-    }).sort({ createdAt: -1 });
+    const results = await PostModel.find({
+      user: { $in: followingIds },
+    })
+      .populate("user")
+      .sort({ createdAt: -1 });
 
     const sharePostResult = await SharePostModel.find({
       user: { $in: followingIds },
