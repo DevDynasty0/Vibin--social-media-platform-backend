@@ -41,7 +41,9 @@ router.route("/register").post(
 router.route("/login").post(loginUser);
 router.route("/google-login").post(googleLogin);
 router.route("/logout").post(verifyToken, logOutUser);
-router.route("/current-user").post(getCurrentUser);
+
+router.route("/current-user").get(verifyToken, getCurrentUser);
+
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/suggested-users").get(verifyToken, getSuggestedUsers);
 router.route("/follow-user").post(verifyToken, followUser);
