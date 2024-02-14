@@ -2,6 +2,10 @@ import { Schema, model, ObjectId } from "mongoose";
 
 const commentSchema = new Schema(
   {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     postId: {
       type: ObjectId,
       required: true,
@@ -9,13 +13,6 @@ const commentSchema = new Schema(
     comment: {
       type: String,
       required: true,
-    },
-    name: {
-      type: String,
-      required: true,
-    },
-    avatar: {
-      type: String,
     },
   },
   {

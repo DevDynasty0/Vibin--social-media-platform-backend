@@ -639,6 +639,18 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 //   }
 // };
 
+const getUserRole = async(req, res) => {
+  let isAdmin = false;
+  const findUser = await User.findOne({ _id: req.body.id});
+  if(findUser?.isAdmin){
+    isAdmin = true
+  }
+
+  res.send({isAdmin})
+
+}
+
+
 export {
   registerUser,
   loginUser,
@@ -654,4 +666,5 @@ export {
   changeAvatar,
   changeCoverImage,
   updateUserDetails,
+  getUserRole
 };

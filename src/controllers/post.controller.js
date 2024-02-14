@@ -5,7 +5,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 const createPost = async (req, res) => {
   try {
     console.log(req.body, "req body");
-    const { caption, contentType, user } = req.body;
+    const { caption, contentType, user, postType } = req.body;
     // console.log(req.file, "req");
     // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
     const postContentLocalPath = req.file?.path || "";
@@ -15,11 +15,8 @@ const createPost = async (req, res) => {
     const newPost = await PostModel.create({
       caption,
       contentType,
-      user: {
-        userId: user.userId,
-        fullName: user.fullName,
-        avatar: user.avatar,
-      },
+      postType,
+      user,
       postContent: postContent?.url || "",
     });
     console.log(newPost);
@@ -35,6 +32,23 @@ const createPost = async (req, res) => {
   }
 };
 
+const createPostShare = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const post = await PostModel.findById({ _id: postId });
+    if (!post) {
+      res.status(404).send({ error: "Document not found" });
+      return;
+    }
+    post.shares += 1;
+    const result = await post.save();
+    res.status(200).send(result);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ message: "Internal server error", success: false });
+  }
+};
+
 const getPosts = async (req, res) => {
   const userId = req.params.userId;
 
@@ -44,8 +58,8 @@ const getPosts = async (req, res) => {
 
   try {
     const result = await PostModel.find({
-      "user.userId": userId,
-    });
+      user: userId,
+    }).populate("user");
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).send("Internal Server Error");
@@ -54,7 +68,6 @@ const getPosts = async (req, res) => {
 
 const getPostsFIds = async (req, res) => {
   const userId = req.user?._id;
-
   if (!userId) {
     return res.status(400).send("User ID not available in the request.");
   }
@@ -64,16 +77,14 @@ const getPostsFIds = async (req, res) => {
       .populate("profile")
       .exec();
 
-    if (!followings || followings.length === 0) {
-      return res.status(200).json([]);
-    }
-
     const followingIds = followings.map((f) => f.profile?._id);
     followingIds.push(userId);
 
-    const result = await PostModel.find({
-      "user.userId": { $in: followingIds },
-    }).sort({ createdAt: -1 });
+    const results = await PostModel.find({
+      user: { $in: followingIds },
+    })
+      .populate("user")
+      .sort({ createdAt: -1 });
 
     // const result = await PostModel.aggregate([
     //   {
@@ -86,7 +97,7 @@ const getPostsFIds = async (req, res) => {
     //   },
     // ]);
 
-    return res.status(200).json(result);
+    return res.status(200).json(results);
   } catch (error) {
     return res.status(500).send("Internal Server Error");
   }
@@ -130,4 +141,11 @@ const deletePost = async (req, res) => {
   }
 };
 
-export { createPost, getPosts, likeToggle, deletePost, getPostsFIds };
+export {
+  createPost,
+  getPosts,
+  likeToggle,
+  deletePost,
+  getPostsFIds,
+  createPostShare,
+};
