@@ -35,19 +35,53 @@ const getCommentsByPostId = async (req, res) => {
 };
 
 const deleteCommentsById = async (req, res) => {
-  
   const commentId = req.params.commentId;
-  const result = await CommentModel.deleteOne({ _id:commentId })
+  const result = await CommentModel.deleteOne({ _id: commentId });
   const postData = await PostModel.findOne({ _id: req.params.postId });
-  const commentnum=await PostModel.updateOne(
+  await PostModel.updateOne(
     { _id: req.params.postId },
     { comments: postData.comments - 1 }
   );
-  console.log('cccc',commentnum);
   return res
     .status(200)
-    .json(new ApiResponse(200, result, "Comments delelt successfully"));
+    .json(new ApiResponse(200, result, "Comment deleted successfully"));
 };
 
+// edit comment
+const updateCommentById = async (req, res) => {
+  try {
+    const commentId = req.params.commentId;
+    const { content } = req.body;
 
-export { createComment, getCommentsByPostId,deleteCommentsById };
+    // Find the comment by its ID and update its content
+    const updatedComment = await CommentModel.findByIdAndUpdate(
+      { _id: commentId },
+      { comment: content },
+      { new: true }
+    );
+
+    if (!updatedComment) {
+      return res
+        .status(404)
+        .json(new ApiResponse(404, {}, "Comment not found"));
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, updatedComment, "Comment updated successfully")
+      );
+  } catch (error) {
+    console.error("Error updating comment:", error);
+    return res
+      .status(500)
+      .json(new ApiResponse(500, {}, "Internal server error"));
+  }
+};
+
+export {
+  createComment,
+  getCommentsByPostId,
+  deleteCommentsById,
+  updateCommentById,
+};
