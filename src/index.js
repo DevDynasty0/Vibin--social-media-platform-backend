@@ -49,19 +49,22 @@ connectDB()
 
       socket.on("new message", (newMessageRecieved) => {
         console.log(newMessageRecieved, "newMessageRecievedssssssss");
-        //  /remeber to remove this
-        // socket
-        //   .in(newMessageRecieved._id)
-        //   .emit("message recieved", newMessageRecieved);
 
-        //we will need this for later
-        let { receiver } = newMessageRecieved;
+        const { receiver } = newMessageRecieved;
         if (!receiver) return console.log("receiver not defined");
+
         socket.in(receiver._id).emit("message recieved", newMessageRecieved);
-        // conversation.participants.forEach((user) => {
-        //   if (user._id == message.sender) return;
-        //   socket.in(receiver._id).emit("message recieved", newMessageRecieved);
-        // });
+      });
+
+      socket.on("new notification", (newNotification) => {
+        console.log(newNotification, "notificationssss");
+
+        const { receiverId } = newNotification;
+        if (!receiverId) return console.log("notification not found.");
+        if (receiverId == senderId)
+          return console.log("receiver and sender are the same person.");
+
+        socket.in(receiverId).emit("notification received", newNotification);
       });
     });
   })
