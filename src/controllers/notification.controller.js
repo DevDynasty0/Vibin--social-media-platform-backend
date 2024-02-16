@@ -1,10 +1,10 @@
-import { NotificationModel } from "../models/notification.model";
-import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
-import { asyncHandler } from "../utils/asyncHandler";
+import { NotificationModel } from "../models/notification.model.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 // {
-////// if notification is  related to post then postid is nedded
+
 //     postId: "61f2aa7e4b51a8954cf4629e",
 
 //     receiverId: "61f2aa7e4b51a8954cf4629f",
@@ -39,7 +39,7 @@ const createNotification = asyncHandler(async (req, res) => {
 
 const getNotifications = asyncHandler(async (req, res) => {
   const notifications = await NotificationModel.find({
-    receiverId: req.user?._id,
+    receiverId: req.params.id
   });
 
   return res
