@@ -1,10 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 
 const notificationSchema = new Schema({
-  // postId: {
-  //   type: Schema.Types.ObjectId,
-  //   ref: "Post",
-  // },
+  postId: {
+    type: Schema.Types.ObjectId,
+    ref: "Post",
+  },
   receiverId: {
     type: Schema.Types.ObjectId,
     ref: "User",
