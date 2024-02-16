@@ -39,8 +39,12 @@ const createNotification = asyncHandler(async (req, res) => {
 
 const getNotifications = asyncHandler(async (req, res) => {
   const notifications = await NotificationModel.find({
-    receiverId: req.params.id
-  });
+    receiverId: req.params.id  
+  }).populate({
+    path: "senderId",
+    select: "avatar ",
+  })
+  
 
   return res
     .status(200)
