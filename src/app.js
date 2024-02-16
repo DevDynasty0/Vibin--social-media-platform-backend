@@ -26,6 +26,7 @@ import settingRouter from "./routes/setting.routes.js";
 import chatRouter from "./routes/chat.routes.js";
 
 import adminRouter from "./routes/admin.routes.js";
+import notificationRouter from "./routes/notification.routes.js";
 
 //routes declaration
 app.use("/api/v1/users", userRouter);
@@ -37,5 +38,8 @@ app.use("/api/v1/settings", settingRouter);
 app.use("/api/v1/chats", chatRouter);
 
 app.use("/api/v1/admin", adminRouter);
+
+app.use("/api/v1/notifications", notificationRouter);
+a;
 
 export { app };
