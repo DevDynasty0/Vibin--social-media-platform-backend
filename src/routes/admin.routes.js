@@ -1,16 +1,15 @@
 import { Router } from "express";
-import {
-  getAllUsers,
-  totalPostsCount,
-} from "../controllers/adminController.js";
-import { verifyToken } from "../middelwares/auth.middleware.js";
-import verifyAdmin from "../middelwares/verifyAdmin.middleware.js";
+import { getAllUsers, getSuspendedUsers, suspendUser, totalPostsCount } from "../controllers/adminController.js";
+// import { verifyToken } from "../middelwares/auth.middleware.js";
+// import verifyAdmin from "../middelwares/verifyAdmin.middleware.js";
 
 const adminRouter = Router();
 
-adminRouter.route("/allUsers").get(verifyToken, verifyAdmin, getAllUsers);
-adminRouter
-  .route("/totalPostCount")
-  .get(verifyToken, verifyAdmin, totalPostsCount);
+// please use verifyToken, verifyAdmin,
+adminRouter.route("/allUsers").get( getAllUsers );
+adminRouter.route("/totalPostCount").get( totalPostsCount );
+adminRouter.route("/suspendUser").post(suspendUser);
+adminRouter.route("/getSuspendUsers").get(getSuspendedUsers);
 
 export default adminRouter;
+

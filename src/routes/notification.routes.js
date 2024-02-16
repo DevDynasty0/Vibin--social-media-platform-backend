@@ -3,7 +3,7 @@ import { Router } from "express";
 import {
   createNotification,
   getNotifications,
-} from "../controllers/notification.controller";
+} from "../controllers/notification.controller.js";
 
 const notificationRouter = Router();
 
