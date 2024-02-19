@@ -156,15 +156,20 @@ const likeToggle = async (req, res) => {
 const deletePost = async (req, res) => {
   try {
     const postId = req.params.postId;
-    console.log('postiiihhhggh',postId);
+    // console.log('postiiihhhggh',postId);
     const result = await PostModel.deleteOne({
       _id: postId,
       // "user.userId": req.user?._id,
     });
-    res.status(200).
-    json(new ApiResponse(200, result, "Post deleted successfully"));
+    // console.log('post delete',result);
+    if (result.deletedCount === 0) {
+      // No post was deleted, return 404 Not Found
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    return  res.status(200).send({ message: "delete succefully", success: true,result});
+   
   } catch (error) {
-    res.status(500).send({ message: "Internal server error", success: false });
+    return res.status(500).send({ message: "Internal server error", success: false });
   }
 };
 
