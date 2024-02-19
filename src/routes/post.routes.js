@@ -18,7 +18,7 @@ postRouter
 postRouter
   .route("/create-post-share/:postId")
   .patch(verifyToken, createPostShare);
-postRouter.route("/delete-post/:postId").delete(verifyToken, deletePost);
+postRouter.route("/delete-post/:postId").delete(verifyToken,deletePost);
 postRouter.route("/get-followings-posts").get(verifyToken, getPostsFIds);
 postRouter.route("/get-posts/:userId").get(getPosts);
 postRouter.route("/like/:postId").patch(verifyToken, likeToggle);

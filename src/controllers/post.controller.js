@@ -156,11 +156,13 @@ const likeToggle = async (req, res) => {
 const deletePost = async (req, res) => {
   try {
     const postId = req.params.postId;
+    console.log('postiiihhhggh',postId);
     const result = await PostModel.deleteOne({
       _id: postId,
-      "user.userId": req.user?._id,
+      // "user.userId": req.user?._id,
     });
-    res.status(200).send(result);
+    res.status(200).
+    json(new ApiResponse(200, result, "Post deleted successfully"));
   } catch (error) {
     res.status(500).send({ message: "Internal server error", success: false });
   }
