@@ -6,9 +6,15 @@ const postSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    realUser:{
+      
+        type: Schema.Types.ObjectId,
+        ref: "User"
+      
+    },
     caption: {
       type: String,
-      required: true,
+      // required: true,
     },
     postContent: {
       type: String,
