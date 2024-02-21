@@ -9,7 +9,9 @@ const savePostSchema = new Schema(
         type:Schema.Types.ObjectId,
         ref:"Post"
       },
-      
+      postContent: {
+        type: String,
+      },
       
     },
     {
