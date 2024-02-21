@@ -8,13 +8,11 @@ export const verifyToken = asyncHandler(async (req, res, next) => {
     const token =
       req.cookies?.accessToken ||
       req.header("Authorization")?.replace("Bearer ", "");
-      console.log(token, "Token");
     if (!token) {
       throw new ApiError(401, "Unauthorized request.");
     }
 
     const decodeToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    // console.log(decodeToken, "decoded");
     const user = await User.findById(decodeToken._id).select(
       "-password -refreshToken"
     );

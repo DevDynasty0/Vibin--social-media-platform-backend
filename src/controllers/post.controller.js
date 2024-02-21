@@ -128,27 +128,48 @@ const getPostsFIds = async (req, res) => {
   }
 };
 
-const likeToggle = async (req, res) => {
+const addReaction = async (req, res) => {
   try {
     const postId = req.params.postId;
-    const existingEmail = req.user?.email;
-    const post = await PostModel.findById(postId);
+    const userId = req.user?._id;
 
-    if (!post) {
-      res.status(404).send({ error: "Document not found" });
-      return;
+    if (!req.body.type) {
+      await PostModel.findOneAndUpdate(
+        { _id: postId, "reactions.user": userId },
+        { $pull: { reactions: { user: userId } } }
+      );
+
+      return res.status(200).send({ message: "Remove reaction" });
     }
 
-    const index = post.likes.indexOf(existingEmail);
-    if (index !== -1) {
-      post.likes.splice(index, 1);
+    const existingReaction = await PostModel.findOneAndUpdate(
+      {
+        _id: postId,
+        "reactions.user": userId,
+        "reactions.type": req.body.type,
+      },
+      { $set: { "reactions.$.type": req.body.type } },
+      { new: true }
+    );
+
+    if (existingReaction) {
+      return res.status(200).send(existingReaction);
     } else {
-      post.likes.push(existingEmail);
+      await PostModel.findOneAndUpdate(
+        { _id: postId, "reactions.user": userId },
+        { $pull: { reactions: { user: userId } } },
+        { new: true }
+      );
+
+      await PostModel.findByIdAndUpdate(
+        postId,
+        { $push: { reactions: { type: req.body.type, user: userId } } },
+        { new: true, upsert: true }
+      );
     }
-    const result = await post.save();
-    res.status(200).send(result);
+
+    return res.status(200).send({ message: "post react added!" });
   } catch (error) {
-    console.log(error);
     res.status(500).send({ message: "Internal server error", success: false });
   }
 };
@@ -169,8 +190,8 @@ const deletePost = async (req, res) => {
 export {
   createPost,
   getPosts,
-  likeToggle,
   deletePost,
   getPostsFIds,
   createPostShare,
+  addReaction,
 };

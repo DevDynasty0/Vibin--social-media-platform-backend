@@ -56,15 +56,12 @@ const registerUser = asyncHandler(async (req, res) => {
   if (ifUserExist) {
     throw new ApiError(409, "User with same email or username already exists");
   }
-  console.log(req.files);
   // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
   const avatarLocalPath = req.files?.avatar?.[0]?.path || "";
   const coverLocalPath = req.files?.coverImage?.[0]?.path || "";
-  console.log(avatarLocalPath, "local path");
 
   if (!avatarLocalPath) {
     // throw new ApiError(400, "Avatar local path is requred");
-    console.log("No avatar file path available");
   }
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
@@ -204,8 +201,6 @@ const googleLogin = asyncHandler(async (req, res) => {
   } else {
     newUser = ifUserExist;
   }
-
-  console.log(newUser, "user from google login");
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     newUser._id
@@ -639,17 +634,15 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 //   }
 // };
 
-const getUserRole = async(req, res) => {
+const getUserRole = async (req, res) => {
   let isAdmin = false;
-  const findUser = await User.findOne({ _id: req.body.id});
-  if(findUser?.isAdmin){
-    isAdmin = true
+  const findUser = await User.findOne({ _id: req.body.id });
+  if (findUser?.isAdmin) {
+    isAdmin = true;
   }
 
-  res.send({isAdmin})
-
-}
-
+  res.send({ isAdmin });
+};
 
 export {
   registerUser,
@@ -666,5 +659,5 @@ export {
   changeAvatar,
   changeCoverImage,
   updateUserDetails,
-  getUserRole
+  getUserRole,
 };
