@@ -1,6 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 const savePostSchema = new Schema(
     {
+      postOwner: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
       user: {
         type: Schema.Types.ObjectId,
         ref: "User",
