@@ -243,7 +243,7 @@ const getMessages = async (req, res) => {
   try {
     const userId = req.params.userId;
     const conversationId = req.params.conversationId;
-    console.log(userId, "user id", conversationId, "convo id");
+    // console.log(userId, "user id", conversationId, "convo id");
 
     const result = await ConversationModel.findOne({
       _id: conversationId,
@@ -263,7 +263,7 @@ const getMessages = async (req, res) => {
           select: "fullName avatar ",
         })
         .sort({ createdAt: 1 });
-      console.log(partOneMessages, "part1");
+      // console.log(partOneMessages, "part1");
 
       return res.status(200).send({
         messages: partOneMessages,

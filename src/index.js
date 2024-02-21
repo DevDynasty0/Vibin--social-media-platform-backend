@@ -35,38 +35,43 @@ connectDB()
     });
 
     io.on("connection", (socket) => {
-      // console.log("connected to socket.io");
-
       socket.on("setup", (userData) => {
+        console.log("setup",userData);
         socket.join(userData?._id);
         socket.emit("connected");
       });
 
       socket.on("join chat", (room) => {
         socket.join(room);
-        console.log("User joined room: " + room);
+        console.log("User joined room :" + room);
       });
 
       socket.on("new message", (newMessageRecieved) => {
         console.log(newMessageRecieved, "newMessageRecievedssssssss");
 
         const { receiver } = newMessageRecieved;
-        if (!receiver) return console.log("receiver not defined");
+        if (!receiver) {
+          return console.log("receiver not defined");
+        }
 
         socket.in(receiver._id).emit("message recieved", newMessageRecieved);
       });
 
       socket.on("new notification", (newNotification) => {
-        console.log(newNotification, "notificationssss");
-
-        const { receiverId } = newNotification;
-        if (!receiverId) return console.log("notification not found.");
-        if (receiverId == senderId)
+        console.log(newNotification, "new notification___");
+        
+        const { receiverId, senderId:{senderId:sender_id} } = newNotification;
+        if (!receiverId) {
+          return console.log("notification not found.")
+        };
+        if (receiverId == sender_id) {
           return console.log("receiver and sender are the same person.");
+        }
 
         socket.in(receiverId).emit("notification received", newNotification);
       });
     });
+
   })
   .catch((err) => console.log("mongodb connection failed:", err));
 
