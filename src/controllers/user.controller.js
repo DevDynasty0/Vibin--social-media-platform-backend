@@ -56,11 +56,11 @@ const registerUser = asyncHandler(async (req, res) => {
   if (ifUserExist) {
     throw new ApiError(409, "User with same email or username already exists");
   }
-  console.log(req.files);
+
   // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
   const avatarLocalPath = req.files?.avatar?.[0]?.path || "";
   const coverLocalPath = req.files?.coverImage?.[0]?.path || "";
-  console.log(avatarLocalPath, "local path");
+  
 
   if (!avatarLocalPath) {
     // throw new ApiError(400, "Avatar local path is requred");
@@ -205,7 +205,7 @@ const googleLogin = asyncHandler(async (req, res) => {
     newUser = ifUserExist;
   }
 
-  console.log(newUser, "user from google login");
+ 
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     newUser._id
@@ -402,7 +402,7 @@ const followUser = asyncHandler(async (req, res) => {
   }
 
   const findUser = await Following.find();
-  console.log(findUser, "_____________Find user");
+
 
   const isFollowExist = await Following.findOne({
     $and: [{ profile }, { follower }],
@@ -450,7 +450,7 @@ const getFollowers = asyncHandler(async (req, res) => {
 
 const getUserProfile = asyncHandler(async (req, res) => {
   const { _id } = req.params;
-  console.log(_id);
+ 
   if (!_id) {
     throw new ApiError(400, "User id is missing");
   }
@@ -515,7 +515,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
     },
   ]);
 
-  console.log(profile);
+ 
 
   if (!profile) {
     throw new ApiError(404, "Profile doesn't exist.");
@@ -528,7 +528,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 const changeAvatar = asyncHandler(async (req, res) => {
-  console.log(req.file, "files in change avatar");
+
   const avatarLocalPath = req.file?.path || "";
   if (!avatarLocalPath) {
     throw new ApiError(401, "Avatar localpath not found for change.");
@@ -607,7 +607,7 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     },
     { new: true }
   ).select("-password");
-  console.log(updateDetails);
+
   return res
     .status(200)
     .json(
