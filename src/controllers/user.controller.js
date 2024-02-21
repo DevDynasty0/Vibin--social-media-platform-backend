@@ -402,7 +402,7 @@ const followUser = asyncHandler(async (req, res) => {
   }
 
   const findUser = await Following.find();
-  console.log(findUser, "_____________Find user");
+  // console.log(findUser, "_____________Find user");
 
   const isFollowExist = await Following.findOne({
     $and: [{ profile }, { follower }],
@@ -449,8 +449,9 @@ const getFollowers = asyncHandler(async (req, res) => {
 });
 
 const getUserProfile = asyncHandler(async (req, res) => {
+  console.log("_____________user req get contro");
   const { _id } = req.params;
-  console.log(_id);
+  
   if (!_id) {
     throw new ApiError(400, "User id is missing");
   }
