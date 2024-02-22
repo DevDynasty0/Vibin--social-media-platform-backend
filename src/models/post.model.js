@@ -24,7 +24,7 @@ const postSchema = new Schema(
       {
         type: {
           type: String,
-          enum: ["like", "love", "care", "haha", "wow", "sad", "angry"],
+          enum: ["love", "unlike", "vibe boost", "funny", "awkward"],
         },
         user: { type: Schema.Types.ObjectId, ref: "User" },
       },

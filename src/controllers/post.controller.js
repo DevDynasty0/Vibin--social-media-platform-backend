@@ -63,12 +63,14 @@ const getPosts = async (req, res) => {
       user: userId,
     })
       .sort({ createdAt: -1 })
-      .populate("user");
+      .populate("user")
+      .populate("reactions.user");
     const sharePostResults = await SharePostModel.find({
       user: userId,
     })
       .sort({ createdAt: -1 })
       .populate("user")
+      .populate("reactions.user")
       .populate({ path: "post", populate: { path: "user", model: "User" } });
     // Merge the results of both queries into a single array
     const combinedResults = [...postResults, ...sharePostResults];
@@ -104,12 +106,14 @@ const getPostsFIds = async (req, res) => {
       user: { $in: followingIds },
     })
       .populate("user")
+      .populate("reactions.user")
       .sort({ createdAt: -1 });
 
     const sharePostResult = await SharePostModel.find({
       user: { $in: followingIds },
     })
       .populate("user")
+      .populate("reactions.user")
       .populate({ path: "post", populate: { path: "user", model: "User" } })
       .sort({ createdAt: -1 });
     // Merge the results of both queries into a single array
