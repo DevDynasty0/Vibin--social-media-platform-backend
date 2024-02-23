@@ -56,6 +56,15 @@ connectDB()
         socket.in(receiver._id).emit("message recieved", newMessageRecieved);
       });
 
+      socket.on("on typing", (typingInfo) => {
+        const { receiver } = typingInfo;
+        if (!receiver) {
+          return console.log("receiver not defined on typing");
+        }
+
+        socket.in(receiver).emit("typing recieved", typingInfo);
+      });
+
       socket.on("new notification", (newNotification) => {
         console.log(newNotification, "new notification___");
 
