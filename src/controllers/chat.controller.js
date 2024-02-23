@@ -3,11 +3,15 @@ import { MessageModel } from "../models/message.model.js";
 
 // The createMessage controller creates conversation with message for first request, for second request it's create a new message only if the request comes from the same or existing participants.
 const createMessage = async (req, res) => {
+  console.log("hello creatingggggggggggggggggggggg");
   try {
     const { conversation, message } = req.body;
+
     const isExist = await ConversationModel.findOne({
       participants: { $all: conversation.participants },
     });
+
+    console.log(isExist, "checking  for convo id");
 
     // checking conversation existence for creating new message
     if (isExist?._id) {
@@ -15,6 +19,8 @@ const createMessage = async (req, res) => {
         ...message,
         conversationId: isExist._id,
       });
+
+      console.log(result, "wheen there is no convo id");
 
       if (result?._id) {
         const conMsgsUp = await ConversationModel.updateOne(
@@ -73,7 +79,6 @@ const createMessage = async (req, res) => {
 const getConversations = async (req, res) => {
   try {
     const userId = req.params.userId;
-    console.log(userId, "get convo controller");
 
     // conversations finding solution one
     const results = await ConversationModel.find({
@@ -101,7 +106,7 @@ const getConversations = async (req, res) => {
         path: "participants",
         select: "fullName avatar",
       })
-      .select("participants");
+      .select("participants lastMessage");
 
     // const results = await ConversationModel.aggregate([
     //   {
@@ -135,8 +140,6 @@ const getConversations = async (req, res) => {
     //     },
     //   },
     // ]);
-
-    console.log(results);
 
     // conversations finding solution two
     // const results = await ConversationModel.aggregate([
@@ -192,7 +195,7 @@ const getConversations = async (req, res) => {
 // const getMessages = async (req, res) => {
 //   try {
 //     const userId = req.params.userId;
-//     const conversationId = req.params.conversationId;
+//     const conversationId = req.params.otherId;
 
 //     const conversation = await ConversationModel.findOne({
 //       _id: conversationId,
@@ -240,18 +243,30 @@ const getConversations = async (req, res) => {
 // };
 
 const getMessages = async (req, res) => {
+  console.log("trying to gettttttttttttttttt");
   try {
     const userId = req.params.userId;
-    const conversationId = req.params.conversationId;
-    // console.log(userId, "user id", conversationId, "convo id");
+    const otherId = req.params.otherId;
+
+    console.log(userId, otherId, "userid other did");
 
     const result = await ConversationModel.findOne({
-      _id: conversationId,
-    });
+      participants: { $all: [userId, otherId] },
+    }).populate("messages");
+
+    console.log(result, "after populating");
+
+    if (!result) {
+      return res.status(200).send({
+        message: "No conversation yet!",
+        status: "success",
+        success: true,
+      });
+    }
 
     if (result?.participants[0] == userId) {
       const partOneMessages = await MessageModel.find({
-        conversationId: conversationId,
+        conversationId: result._id,
         delPart1Msg: false,
       })
         .populate({
@@ -263,21 +278,23 @@ const getMessages = async (req, res) => {
           select: "fullName avatar ",
         })
         .sort({ createdAt: 1 });
-      // console.log(partOneMessages, "part1");
+
+      console.log(partOneMessages, "partOneMessages checking for get");
 
       return res.status(200).send({
         messages: partOneMessages,
         status: "success",
         success: true,
       });
-    } else if (result?.participants[1] == req.userId) {
+    } else if (result?.participants[1] == userId) {
       const partTwoMessages = await MessageModel.find({
-        conversationId: conversationId,
+        conversationId: result._id,
         delPart2Msg: false,
       })
         .populate("sender receiver")
         .sort({ createdAt: 1 });
-      console.log(partTwoMessages, "part2");
+
+      console.log(partTwoMessages, "partTwoMessages checking for get");
 
       return res.status(200).send({
         messages: partTwoMessages,

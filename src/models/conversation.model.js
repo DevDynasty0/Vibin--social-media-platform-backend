@@ -29,7 +29,7 @@ const conversationSchema = new Schema(
     messages: [{ type: Schema.Types.ObjectId, ref: "Message" }],
     lastMessage: {
       type: String,
-      required: true,
+      // required: true,
     },
     delPart1Msgs: {
       type: Boolean,
