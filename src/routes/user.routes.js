@@ -42,7 +42,7 @@ router.route("/login").post(loginUser);
 router.route("/google-login").post(googleLogin);
 router.route("/logout").post(verifyToken, logOutUser);
 
-router.route("/current-user").patch(verifyToken, getCurrentUser);
+router.route("/current-user").get(verifyToken, getCurrentUser);
 
 router.route("/refresh-token").post(refreshAccessToken);
 router.route("/suggested-users").get(verifyToken, getSuggestedUsers);

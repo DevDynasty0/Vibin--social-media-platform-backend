@@ -113,9 +113,9 @@ const getPostsFIds = async (req, res) => {
       user: { $in: followingIds },
     })
       .populate("user")
-      .populate("reactions.user")
       .populate({ path: "post", populate: { path: "user", model: "User" } })
       .sort({ createdAt: -1 });
+
     // Merge the results of both queries into a single array
     const combinedResults = [...results, ...sharePostResult];
 
