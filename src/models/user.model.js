@@ -47,7 +47,8 @@ const userSchema = new Schema(
       type: String, //cloudinary url
       // required: true,
       default:
-        "https://res.cloudinary.com/dsfyrjd8b/image/upload/v1707303580/by2cegfudppucnxbwvun.png",
+        // "https://res.cloudinary.com/dsfyrjd8b/image/upload/v1707303580/by2cegfudppucnxbwvun.png",
+        "https://asset.cloudinary.com/dtwz2gkbz/b54c075288596d77fcb8510f7fca0ea6",
     },
     coverImage: {
       type: String, //cloudinary

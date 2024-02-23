@@ -54,6 +54,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (ifUserExist) {
     throw new ApiError(409, "User with same email or username already exists");
   }
+
   // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
   const avatarLocalPath = req.files?.avatar?.[0]?.path || "";
   const coverLocalPath = req.files?.coverImage?.[0]?.path || "";
@@ -392,6 +393,7 @@ const getFollowers = asyncHandler(async (req, res) => {
 });
 
 const getUserProfile = asyncHandler(async (req, res) => {
+  console.log("_____________user req get contro");
   const { _id } = req.params;
   console.log(_id);
   if (!_id) {
@@ -458,8 +460,6 @@ const getUserProfile = asyncHandler(async (req, res) => {
     },
   ]);
 
-  console.log(profile);
-
   if (!profile) {
     throw new ApiError(404, "Profile doesn't exist.");
   }
@@ -471,7 +471,6 @@ const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 const changeAvatar = asyncHandler(async (req, res) => {
-  console.log(req.file, "files in change avatar");
   const avatarLocalPath = req.file?.path || "";
   if (!avatarLocalPath) {
     throw new ApiError(401, "Avatar localpath not found for change.");
@@ -550,7 +549,7 @@ const updateUserDetails = asyncHandler(async (req, res) => {
     },
     { new: true }
   ).select("-password");
-  console.log(updateDetails);
+
   return res
     .status(200)
     .json(
