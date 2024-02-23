@@ -40,31 +40,34 @@ const createNotification = asyncHandler(async (req, res) => {
 const getNotifications = asyncHandler(async (req, res) => {
   //  await NotificationModel.deleteMany({});
   const notifications = await NotificationModel.find({
-    receiverId: req.params.id  
+    receiverId: req.params.id,
   }).populate({
     path: "senderId",
     select: "avatar ",
-  })
-  
+  });
 
   return res
     .status(200)
     .json(new ApiResponse(200, notifications, "Fetched all notifications."));
 });
 
-const changeNotificationStatus = async(req, res) => {
-  console.log("___________hitted");
+const changeNotificationStatus = async (req, res) => {
   try {
     const userId = req.user?._id;
-    const result = await NotificationModel.updateMany({receiverId: userId}, {
-      $set:{
-        isRead: true
+    const result = await NotificationModel.updateMany(
+      { receiverId: userId },
+      {
+        $set: {
+          isRead: true,
+        },
       }
-    })
-    return res.status(200).send({message: "notificaion status updated successfully"})
+    );
+    return res
+      .status(200)
+      .send({ message: "notificaion status updated successfully" });
   } catch (error) {
     console.log(error, "notificaion update error");
   }
-}
+};
 
 export { createNotification, getNotifications, changeNotificationStatus };

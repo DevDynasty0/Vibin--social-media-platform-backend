@@ -11,7 +11,7 @@ import {
 const chatRouter = Router();
 
 chatRouter.route("/conversations/:userId").get(getConversations);
-chatRouter.route("/messages/:userId/:conversationId").get(getMessages);
+chatRouter.route("/messages/:userId/:otherId").get(getMessages);
 
 chatRouter.route("/create-message").post(createMessage);
 chatRouter.route("/:userId/:msgId").delete(deleteMessage);

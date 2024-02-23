@@ -4,7 +4,7 @@ import { User } from "../models/user.model.js";
 const getSearchResult = async (req, res) => {
   try {
     const { query } = req.query;
-    console.log(query);
+
     const users = await User.find({
       fullName: { $regex: new RegExp(query, "i") },
     }).select("-password -refreshToken");
