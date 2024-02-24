@@ -11,6 +11,7 @@ import { Server } from "socket.io";
 
 dotenv.config({ path: "./.env" });
 
+
 connectDB()
   .then(() => {
     app.on("error", (error) => {
@@ -25,6 +26,7 @@ connectDB()
       console.log("Vibin Server is running at port: ", process.env.PORT);
     });
 
+    
     //socket io configuration
 
     const io = new Server(vibinServer, {
@@ -36,7 +38,7 @@ connectDB()
 
     io.on("connection", (socket) => {
       socket.on("setup", (userData) => {
-        console.log("setup",userData);
+        console.log("setup", userData);
         socket.join(userData?._id);
         socket.emit("connected");
       });
@@ -59,8 +61,8 @@ connectDB()
 
       socket.on("new notification", (newNotification) => {
         console.log(newNotification, "new notification___");
-        
-        const { receiverId, senderId:{senderId:sender_id} } = newNotification;
+
+        const { receiverId, senderId: { senderId: sender_id } } = newNotification;
         if (!receiverId) {
           return console.log("notification not found.")
         };
@@ -73,22 +75,6 @@ connectDB()
     });
 
   })
+
   .catch((err) => console.log("mongodb connection failed:", err));
 
-//
-// import express from "express";
-// const app = express()(async () => {
-//   try {
-//     await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`);
-//     app.on("error", (error) => {
-//       console.log("ERRRR: ", error);
-//       throw error;
-//     });
-
-//     app.listen(process.env.PORT, () => {
-//       console.log(`app is listening on ${process.env.PORT}`);
-//     });
-//   } catch (error) {
-//     console.log(error);
-//   }
-// })();
