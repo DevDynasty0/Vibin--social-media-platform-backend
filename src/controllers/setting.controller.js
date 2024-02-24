@@ -54,7 +54,6 @@ const unFollowUser = async (req, res) => {
   }
 
   const deleteFollow = await Following.deleteOne({ follower, profile });
-  console.log(deleteFollow);
   return res
     .status(200)
     .json(new ApiResponse(200, deleteFollow, "unfollowed successfully"));
@@ -108,7 +107,6 @@ const unBlockUser = async (req, res) => {
   }
 
   const unBlockRes = await Block.deleteOne({ blockedPerson, blockedBy });
-  console.log(unBlockRes);
   return res
     .status(200)
     .json(new ApiResponse(200, unBlockRes, "Unblock successfully"));

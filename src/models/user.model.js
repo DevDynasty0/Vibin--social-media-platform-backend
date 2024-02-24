@@ -11,7 +11,7 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
-    userName:{
+    userName: {
       type: String,
       lowercase: true,
       trim: true,
@@ -22,25 +22,25 @@ const userSchema = new Schema(
       trim: true,
       index: true,
     },
-    dob:{
-      type:Date,
+    dob: {
+      type: Date,
       trim: true,
     },
-    university:{
+    university: {
       type: String,
       trim: true,
     },
-    address:{
+    address: {
       type: String,
       trim: true,
     },
-    extraEmail:{
+    extraEmail: {
       type: String,
       unique: true,
       lowercase: true,
       trim: true,
     },
-    religion:{
+    religion: {
       type: String,
     },
     avatar: {
@@ -86,9 +86,9 @@ const userSchema = new Schema(
     refreshToken: {
       type: String,
     },
-    isAdmin : {
+    isAdmin: {
       type: Boolean,
-    }
+    },
   },
   {
     timestamps: true,
@@ -110,8 +110,6 @@ userSchema.methods.generateAccessToken = function () {
     {
       _id: this._id,
       email: this.email,
-      // username: this.username,
-      // fullName: this.fullName,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {

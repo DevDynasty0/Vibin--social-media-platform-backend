@@ -6,11 +6,9 @@ const postSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    realUser:{
-      
-        type: Schema.Types.ObjectId,
-        ref: "User"
-      
+    realUser: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
     caption: {
       type: String,
@@ -22,7 +20,15 @@ const postSchema = new Schema(
     contentType: {
       type: String,
     },
-    likes: [String],
+    reactions: [
+      {
+        type: {
+          type: String,
+          enum: ["love", "unlike", "vibe boost", "funny", "awkward"],
+        },
+        user: { type: Schema.Types.ObjectId, ref: "User" },
+      },
+    ],
     shares: {
       type: Number,
       default: 0,

@@ -246,6 +246,7 @@ const getMessages = async (req, res) => {
   console.log("trying to gettttttttttttttttt");
   try {
     const userId = req.params.userId;
+    // const conversationId = req.params.conversationId;
     const otherId = req.params.otherId;
 
     console.log(userId, otherId, "userid other did");
