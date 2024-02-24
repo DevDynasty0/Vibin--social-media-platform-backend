@@ -3,7 +3,6 @@ import { User } from "../models/user.model.js";
 const verifyAdmin = async (req, res, next) => {
   try {
     const findUser = await User.findOne({ _id: req.body.id });
-    console.log(findUser, "Unakei admin banai dichilam?");
     if (!findUser?.isAdmin) {
       return res.status(403).send({
         message: "Forbidden access",

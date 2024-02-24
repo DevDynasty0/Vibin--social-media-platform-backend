@@ -5,14 +5,11 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const createPost = async (req, res) => {
   try {
-    console.log(req.body, "req body");
     const { caption, contentType, user, postType } = req.body;
-    // console.log(req.file, "req");
+
     // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
     const postContentLocalPath = req.file?.path || "";
     const postContent = await uploadOnCloudinary(postContentLocalPath);
-    // console.log(postContentLocalPath, "postContentLocalPath");
-    console.log(postContent, "postContent cloudinary");
     const newPost = await PostModel.create({
       caption,
       contentType,
@@ -20,13 +17,12 @@ const createPost = async (req, res) => {
       user,
       postContent: postContent?.url || "",
     });
-    console.log(newPost);
+
     // const postModel = new PostModel(body);
     // const result = await PostModel.save();
     // res.status(201).send(result);
     return res.status(200).send(newPost);
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .send({ message: "Internal server error", success: false });
@@ -46,7 +42,6 @@ const createPostShare = async (req, res) => {
 
     res.status(200).send(sharePost);
   } catch (error) {
-    console.log(error);
     res.status(500).send({ message: "Internal server error", success: false });
   }
 };
@@ -189,12 +184,15 @@ const deletePost = async (req, res) => {
     // console.log('post delete',result);
     if (result.deletedCount === 0) {
       // No post was deleted, return 404 Not Found
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
-    return  res.status(200).send({ message: "delete succefully", success: true,result});
-   
+    return res
+      .status(200)
+      .send({ message: "delete succefully", success: true, result });
   } catch (error) {
-    return res.status(500).send({ message: "Internal server error", success: false });
+    return res
+      .status(500)
+      .send({ message: "Internal server error", success: false });
   }
 };
 

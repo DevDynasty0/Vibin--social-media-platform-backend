@@ -65,11 +65,14 @@ const blockUser = async (req, res) => {
 
     const blockedUserRes = await Block.create({ blockedPerson, blockedBy });
 
+    console.log(blockedUserRes, "Blocked user");
+
     if (blockedUserRes?._id) {
       const deleteFollow = await Following.deleteOne({
         follower: blockedBy,
         profile: blockedPerson,
       });
+      console.log(deleteFollow);
     }
 
     return res
@@ -87,6 +90,7 @@ const getBlockedUsers = async (req, res) => {
     const blockedUsers = await Block.find({ blockedBy: req.params.userId })
       .populate("blockedPerson")
       .exec();
+    console.log(blockedUsers);
     return res
       .status(200)
       .json(new ApiResponse(200, blockedUsers, "Fetched users blocked"));

@@ -36,7 +36,6 @@ connectDB()
 
     io.on("connection", (socket) => {
       socket.on("setup", (userData) => {
-        console.log("setup",userData);
         socket.join(userData?._id);
         socket.emit("connected");
       });
@@ -57,13 +56,25 @@ connectDB()
         socket.in(receiver._id).emit("message recieved", newMessageRecieved);
       });
 
+      socket.on("on typing", (typingInfo) => {
+        const { receiver } = typingInfo;
+        if (!receiver) {
+          return console.log("receiver not defined on typing");
+        }
+
+        socket.in(receiver).emit("typing recieved", typingInfo);
+      });
+
       socket.on("new notification", (newNotification) => {
         console.log(newNotification, "new notification___");
-        
-        const { receiverId, senderId:{senderId:sender_id} } = newNotification;
+
+        const {
+          receiverId,
+          senderId: { senderId: sender_id },
+        } = newNotification;
         if (!receiverId) {
-          return console.log("notification not found.")
-        };
+          return console.log("notification not found.");
+        }
         if (receiverId == sender_id) {
           return console.log("receiver and sender are the same person.");
         }
@@ -71,7 +82,6 @@ connectDB()
         socket.in(receiverId).emit("notification received", newNotification);
       });
     });
-
   })
   .catch((err) => console.log("mongodb connection failed:", err));
 
