@@ -48,7 +48,7 @@ const createPostShare = async (req, res) => {
 
 const getPosts = async (req, res) => {
   const userId = req.params.userId;
-
+  
   if (!userId) {
     return res.status(400).send("User ID not available in the request.");
   }
@@ -60,14 +60,16 @@ const getPosts = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate("user")
       .populate("reactions.user");
+     
     const sharePostResults = await SharePostModel.find({
       user: userId,
     })
       .sort({ createdAt: -1 })
       .populate("user")
-      .populate("reactions.user")
+      // .populate("reactions.user")
       .populate({ path: "post", populate: { path: "user", model: "User" } });
     // Merge the results of both queries into a single array
+    console.log(sharePostResults, "shared post___________________________");
     const combinedResults = [...postResults, ...sharePostResults];
 
     // Sort the combined array based on timestamps
@@ -79,7 +81,7 @@ const getPosts = async (req, res) => {
 
     return res.status(200).json(combinedResults);
   } catch (error) {
-    return res.status(500).send("Internal Server Error");
+    return res.status(500).send("I am already died");
   }
 };
 
