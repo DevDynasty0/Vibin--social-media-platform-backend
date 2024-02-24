@@ -5,21 +5,20 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 const getAllUsers = async (req, res) => {
   try {
-    
     const allUsers = await User.aggregate([
       {
-        $lookup : {
-          from : "suspendusers",
-          localField : "_id",
-          foreignField : "normalUser",
-          as : "suspendedUsers"
-        }
+        $lookup: {
+          from: "suspendusers",
+          localField: "_id",
+          foreignField: "normalUser",
+          as: "suspendedUsers",
+        },
       },
       {
-        $match : {
-          suspendedUsers : { $eq : [] }
-        }
-      }
+        $match: {
+          suspendedUsers: { $eq: [] },
+        },
+      },
     ]);
     return res.status(200).json(new ApiResponse(200, allUsers, "all users"));
   } catch (error) {
@@ -42,27 +41,25 @@ const totalPostsCount = async (req, res) => {
   }
 };
 
+const suspendUser = async (req, res) => {
+  try {
+    const data = {
+      normalUser: req.body.normalUser,
+      admin: req.body.admin,
+    };
+    const result = await SuspendUser.create(data);
 
-const suspendUser = async(req, res) => {
-    try {
-      const data = {
-        normalUser: req.body.normalUser,
-        admin: req.body.admin
-      }
-     const result = await SuspendUser.create(data);
-     console.log(result);
-     return res
+    return res
       .status(200)
       .json(new ApiResponse(200, result, "Suspend successfully"));
-
-    } catch (error) {
-      return res
+  } catch (error) {
+    return res
       .status(500)
       .send({ message: "Internal Server Error", error: error.message });
-    }
+  }
 };
 
-const getSuspendedUsers = async(req, res) => {
+const getSuspendedUsers = async (req, res) => {
   try {
     const result = await SuspendUser.find().populate("normalUser");
     return res
@@ -72,7 +69,6 @@ const getSuspendedUsers = async(req, res) => {
     return res
       .status(500)
       .send({ message: "Internal Server Error", error: error.message });
-  
   }
 };
 

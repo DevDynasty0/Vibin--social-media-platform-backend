@@ -6,10 +6,8 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 import { Following } from "../models/follow.model.js";
 import mongoose from "mongoose";
-
 import { Setting } from "../models/setting.model.js";
 
-import { PostModel } from "../models/post.model.js";
 const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -60,11 +58,9 @@ const registerUser = asyncHandler(async (req, res) => {
   // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
   const avatarLocalPath = req.files?.avatar?.[0]?.path || "";
   const coverLocalPath = req.files?.coverImage?.[0]?.path || "";
-  
 
   if (!avatarLocalPath) {
     // throw new ApiError(400, "Avatar local path is requred");
-    console.log("No avatar file path available");
   }
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
@@ -81,7 +77,6 @@ const registerUser = asyncHandler(async (req, res) => {
     coverImage: coverImage?.url || "",
     email,
     password,
-    // username: username?.toLowerCase() || "",
   });
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
@@ -104,19 +99,12 @@ const registerUser = asyncHandler(async (req, res) => {
   };
 
   return res
+    .cookie("refreshToken", refreshToken, options)
     .status(201)
-    .cookie("accessToken", accessToken, {
-      ...options,
-      maxAge: 24 * 60 * 60 * 1000,
-    })
-    .cookie("refreshToken", refreshToken, {
-      ...options,
-      maxAge: 10 * 24 * 60 * 60 * 1000,
-    })
     .json(
       new ApiResponse(
         200,
-        { user: createdUser, accessToken, refreshToken },
+        { user: createdUser, accessToken },
         "User registered successfully"
       )
     );
@@ -135,10 +123,6 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Email is required!");
   }
   const user = await User.findOne({ email });
-  // //#for findOne by username or email
-  //await User.findOne({
-  //   $or :[{email},{username}]
-  // })
 
   if (!user) {
     throw new ApiError(404, "User doesn't exist!");
@@ -164,21 +148,13 @@ const loginUser = asyncHandler(async (req, res) => {
   };
   return res
     .status(200)
-    .cookie("accessToken", accessToken, {
-      ...options,
-      maxAge: 24 * 60 * 60 * 1000,
-    })
-    .cookie("refreshToken", refreshToken, {
-      ...options,
-      maxAge: 10 * 24 * 60 * 60 * 1000,
-    })
+    .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponse(
         200,
         {
           user: loggedInUser,
           accessToken,
-          refreshToken,
         },
         "User logged in successfully."
       )
@@ -205,8 +181,6 @@ const googleLogin = asyncHandler(async (req, res) => {
     newUser = ifUserExist;
   }
 
- 
-
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     newUser._id
   );
@@ -229,25 +203,18 @@ const googleLogin = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .cookie("accessToken", accessToken, {
-      ...options,
-      maxAge: 24 * 60 * 60 * 1000,
-    })
-    .cookie("refreshToken", refreshToken, {
-      ...options,
-      maxAge: 10 * 24 * 60 * 60 * 1000,
-    })
+    .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponse(
         200,
-        { user: createdUser, accessToken, refreshToken },
-        "User registered successfully unsing google."
+        { user: createdUser, accessToken },
+        "User registered successfully signin google."
       )
     );
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
-  const findUser = User.findByIdAndUpdate(
+  await User.findByIdAndUpdate(
     req.user._id,
     {
       $unset: {
@@ -258,6 +225,7 @@ const logOutUser = asyncHandler(async (req, res) => {
       new: true,
     }
   );
+
   const options = {
     httpOnly: true,
     secure: true,
@@ -265,20 +233,19 @@ const logOutUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
     .json(new ApiResponse(200, {}, "User Logged Out."));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken =
-    req.cookies.refreshToken || req.body.refreshToken;
+  const incomingRefreshToken = req?.cookies?.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new ApiError(401, "Unauthorized access.");
   }
+
   try {
-    const decodeToken = jwt.verify(
+    const decodeToken = await jwt.verify(
       incomingRefreshToken,
       process.env.REFRESH_TOKEN_SECRET
     );
@@ -297,17 +264,16 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: true,
     };
 
-    const { accessToken, newRefreshToken } =
-      await generateAccessAndRefreshToken(user._id);
+    const accessToken = await user.generateAccessToken();
+    console.log("this is from refreshToken 271 lines: ", accessToken);
 
     return res
       .status(200)
-      .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshToken, options)
+      .cookie("refreshToken", incomingRefreshToken, options)
       .json(
         new ApiResponse(
           200,
-          { accessToken, refreshToken: newRefreshToken },
+          { accessToken, user },
           "Access token refresh success."
         )
       );
@@ -317,37 +283,15 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-  // const { _id } = req.body;
-  // console.log(_id);
   const user = await User.findById({ _id: req.user._id });
 
-  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
-    req?.user?._id
-  );
+  if (!user) {
+    throw new ApiError(401, "Unauthorized access.");
+  }
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-  return (
-    res
-      .status(200)
-      // .cookie("accessToken", accessToken, {
-      //   ...options,
-      //   maxAge: 24 * 60 * 60 * 1000,
-      // })
-      // .cookie("refreshToken", refreshToken, {
-      //   ...options,
-      //   maxAge: 10 * 24 * 60 * 60 * 1000,
-      // })
-      .json(
-        new ApiResponse(
-          200,
-          { user, accessToken },
-          "Current user fetched successfully"
-        )
-      )
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { user }, "Current user fetched successfully"));
 });
 
 const getSuggestedUsers = asyncHandler(async (req, res) => {
@@ -402,7 +346,6 @@ const followUser = asyncHandler(async (req, res) => {
   }
 
   const findUser = await Following.find();
-  console.log(findUser, "_____________Find user");
 
   const isFollowExist = await Following.findOne({
     $and: [{ profile }, { follower }],
@@ -451,7 +394,7 @@ const getFollowers = asyncHandler(async (req, res) => {
 const getUserProfile = asyncHandler(async (req, res) => {
   console.log("_____________user req get contro");
   const { _id } = req.params;
-  console.log(_id);
+
   if (!_id) {
     throw new ApiError(400, "User id is missing");
   }
@@ -516,8 +459,6 @@ const getUserProfile = asyncHandler(async (req, res) => {
     },
   ]);
 
- 
-
   if (!profile) {
     throw new ApiError(404, "Profile doesn't exist.");
   }
@@ -529,7 +470,6 @@ const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 const changeAvatar = asyncHandler(async (req, res) => {
-
   const avatarLocalPath = req.file?.path || "";
   if (!avatarLocalPath) {
     throw new ApiError(401, "Avatar localpath not found for change.");
@@ -640,17 +580,15 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 //   }
 // };
 
-const getUserRole = async(req, res) => {
+const getUserRole = async (req, res) => {
   let isAdmin = false;
-  const findUser = await User.findOne({ _id: req.body.id});
-  if(findUser?.isAdmin){
-    isAdmin = true
+  const findUser = await User.findOne({ _id: req.body.id });
+  if (findUser?.isAdmin) {
+    isAdmin = true;
   }
 
-  res.send({isAdmin})
-
-}
-
+  res.send({ isAdmin });
+};
 
 export {
   registerUser,
@@ -667,5 +605,5 @@ export {
   changeAvatar,
   changeCoverImage,
   updateUserDetails,
-  getUserRole
+  getUserRole,
 };

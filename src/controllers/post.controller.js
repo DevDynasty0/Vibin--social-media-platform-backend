@@ -5,14 +5,11 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const createPost = async (req, res) => {
   try {
-    console.log(req.body, "req body");
     const { caption, contentType, user, postType } = req.body;
-    // console.log(req.file, "req");
+
     // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
     const postContentLocalPath = req.file?.path || "";
     const postContent = await uploadOnCloudinary(postContentLocalPath);
-    // console.log(postContentLocalPath, "postContentLocalPath");
-    console.log(postContent, "postContent cloudinary");
     const newPost = await PostModel.create({
       caption,
       contentType,
@@ -20,13 +17,12 @@ const createPost = async (req, res) => {
       user,
       postContent: postContent?.url || "",
     });
-    console.log(newPost);
+
     // const postModel = new PostModel(body);
     // const result = await PostModel.save();
     // res.status(201).send(result);
     return res.status(200).send(newPost);
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .send({ message: "Internal server error", success: false });
@@ -46,7 +42,6 @@ const createPostShare = async (req, res) => {
 
     res.status(200).send(sharePost);
   } catch (error) {
-    console.log(error);
     res.status(500).send({ message: "Internal server error", success: false });
   }
 };
@@ -63,12 +58,14 @@ const getPosts = async (req, res) => {
       user: userId,
     })
       .sort({ createdAt: -1 })
-      .populate("user");
+      .populate("user")
+      .populate("reactions.user");
     const sharePostResults = await SharePostModel.find({
       user: userId,
     })
       .sort({ createdAt: -1 })
       .populate("user")
+      .populate("reactions.user")
       .populate({ path: "post", populate: { path: "user", model: "User" } });
     // Merge the results of both queries into a single array
     const combinedResults = [...postResults, ...sharePostResults];
@@ -104,6 +101,7 @@ const getPostsFIds = async (req, res) => {
       user: { $in: followingIds },
     })
       .populate("user")
+      .populate("reactions.user")
       .sort({ createdAt: -1 });
 
     const sharePostResult = await SharePostModel.find({
@@ -112,6 +110,7 @@ const getPostsFIds = async (req, res) => {
       .populate("user")
       .populate({ path: "post", populate: { path: "user", model: "User" } })
       .sort({ createdAt: -1 });
+
     // Merge the results of both queries into a single array
     const combinedResults = [...results, ...sharePostResult];
 
@@ -128,27 +127,48 @@ const getPostsFIds = async (req, res) => {
   }
 };
 
-const likeToggle = async (req, res) => {
+const addReaction = async (req, res) => {
   try {
     const postId = req.params.postId;
-    const existingEmail = req.user?.email;
-    const post = await PostModel.findById(postId);
+    const userId = req.user?._id;
 
-    if (!post) {
-      res.status(404).send({ error: "Document not found" });
-      return;
+    if (!req.body.type) {
+      await PostModel.findOneAndUpdate(
+        { _id: postId, "reactions.user": userId },
+        { $pull: { reactions: { user: userId } } }
+      );
+
+      return res.status(200).send({ message: "Remove reaction" });
     }
 
-    const index = post.likes.indexOf(existingEmail);
-    if (index !== -1) {
-      post.likes.splice(index, 1);
+    const existingReaction = await PostModel.findOneAndUpdate(
+      {
+        _id: postId,
+        "reactions.user": userId,
+        "reactions.type": req.body.type,
+      },
+      { $set: { "reactions.$.type": req.body.type } },
+      { new: true }
+    );
+
+    if (existingReaction) {
+      return res.status(200).send(existingReaction);
     } else {
-      post.likes.push(existingEmail);
+      await PostModel.findOneAndUpdate(
+        { _id: postId, "reactions.user": userId },
+        { $pull: { reactions: { user: userId } } },
+        { new: true }
+      );
+
+      await PostModel.findByIdAndUpdate(
+        postId,
+        { $push: { reactions: { type: req.body.type, user: userId } } },
+        { new: true, upsert: true }
+      );
     }
-    const result = await post.save();
-    res.status(200).send(result);
+
+    return res.status(200).send({ message: "post react added!" });
   } catch (error) {
-    console.log(error);
     res.status(500).send({ message: "Internal server error", success: false });
   }
 };
@@ -164,20 +184,23 @@ const deletePost = async (req, res) => {
     // console.log('post delete',result);
     if (result.deletedCount === 0) {
       // No post was deleted, return 404 Not Found
-      return res.status(404).json({ error: 'Post not found' });
+      return res.status(404).json({ error: "Post not found" });
     }
-    return  res.status(200).send({ message: "delete succefully", success: true,result});
-   
+    return res
+      .status(200)
+      .send({ message: "delete succefully", success: true, result });
   } catch (error) {
-    return res.status(500).send({ message: "Internal server error", success: false });
+    return res
+      .status(500)
+      .send({ message: "Internal server error", success: false });
   }
 };
 
 export {
   createPost,
   getPosts,
-  likeToggle,
   deletePost,
   getPostsFIds,
   createPostShare,
+  addReaction,
 };
