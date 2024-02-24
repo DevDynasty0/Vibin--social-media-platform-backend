@@ -22,7 +22,7 @@ postRouter
   .patch(verifyToken, createPostShare);
 postRouter.route("/delete-post/:postId").delete(verifyToken, deletePost);
 postRouter.route("/get-followings-posts").get(verifyToken, getPostsFIds);
-postRouter.route("/get-posts/:userId").get(getPosts);
+postRouter.route("/get-posts/:userId").get(verifyToken, getPosts);
 postRouter.route("/reaction/:postId").patch(verifyToken, addReaction);
 postRouter.route("/savePost/:postId").patch(verifyToken, createSavePost);
 postRouter.route("/savePost").post(verifyToken, createSavePost);
