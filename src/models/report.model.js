@@ -27,6 +27,11 @@ const reportSchema = new Schema({
         enum:['Pending','Reviewed','Resolved'],
         required: true,
         default: 'Pending'
+    },
+    reportType:{
+        type: String,
+        enum:['User','Post'],
+        required: true
     }
 },{timestamps:true})
 

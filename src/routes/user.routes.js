@@ -19,6 +19,7 @@ import {
 import { upload } from "../middelwares/multer.middleware.js";
 import { verifyToken } from "../middelwares/auth.middleware.js";
 import { getSearchResult } from "../controllers/search.controller.js";
+import { reportPost, reportUser } from "../controllers/report.controller.js";
 
 const router = Router();
 
@@ -58,5 +59,8 @@ router
 router
   .route("/change-cover-image")
   .patch(verifyToken, upload.single("coverImage"), changeCoverImage);
+
+router.route('/report-user').post(reportUser)
+router.route('/report-post').post(reportPost)
 
 export default router;
