@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getAllUsers, getSuspendedUsers, suspendUser, totalPostsCount } from "../controllers/adminController.js";
+import { getReportedPosts, getReportedUsers, getTotalReportsCount } from "../controllers/report.controller.js";
 // import { verifyToken } from "../middelwares/auth.middleware.js";
 // import verifyAdmin from "../middelwares/verifyAdmin.middleware.js";
 
@@ -10,6 +11,8 @@ adminRouter.route("/allUsers").get( getAllUsers );
 adminRouter.route("/totalPostCount").get( totalPostsCount );
 adminRouter.route("/suspendUser").post(suspendUser);
 adminRouter.route("/getSuspendUsers").get(getSuspendedUsers);
-
+adminRouter.route('/getReportedUsers').get(getReportedUsers)
+adminRouter.route('/getReportedPosts').get(getReportedPosts)
+adminRouter.route('/getTotalReportsCount').get(getTotalReportsCount)
 export default adminRouter;
 
