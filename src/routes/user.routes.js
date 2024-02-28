@@ -41,7 +41,7 @@ router.route("/register").post(
 
 router.route("/login").post(loginUser);
 router.route("/google-login").post(googleLogin);
-router.route("/logout").post(verifyToken, logOutUser);
+router.route("/logout/:userId").post(logOutUser);
 
 router.route("/current-user").get(verifyToken, getCurrentUser);
 
@@ -60,7 +60,7 @@ router
   .route("/change-cover-image")
   .patch(verifyToken, upload.single("coverImage"), changeCoverImage);
 
-router.route('/report-user').post(reportUser)
-router.route('/report-post').post(reportPost)
+router.route("/report-user").post(reportUser);
+router.route("/report-post").post(reportPost);
 
 export default router;

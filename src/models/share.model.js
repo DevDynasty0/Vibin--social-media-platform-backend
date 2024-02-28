@@ -10,7 +10,15 @@ const shareSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Post",
     },
-    likes: [String],
+    reactions: [
+      {
+        type: {
+          type: String,
+          enum: ["love", "unlike", "vibe boost", "funny", "awkward"],
+        },
+        user: { type: Schema.Types.ObjectId, ref: "User" },
+      },
+    ],
     shares: {
       type: Number,
       default: 0,

@@ -48,7 +48,7 @@ const createPostShare = async (req, res) => {
 
 const getPosts = async (req, res) => {
   const userId = req.params.userId;
-  
+
   if (!userId) {
     return res.status(400).send("User ID not available in the request.");
   }
@@ -60,16 +60,15 @@ const getPosts = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate("user")
       .populate("reactions.user");
-     
+
     const sharePostResults = await SharePostModel.find({
       user: userId,
     })
       .sort({ createdAt: -1 })
       .populate("user")
-      // .populate("reactions.user")
+      .populate("reactions.user")
       .populate({ path: "post", populate: { path: "user", model: "User" } });
-    // Merge the results of both queries into a single array
-    console.log(sharePostResults, "shared post___________________________");
+
     const combinedResults = [...postResults, ...sharePostResults];
 
     // Sort the combined array based on timestamps
@@ -110,6 +109,7 @@ const getPostsFIds = async (req, res) => {
       user: { $in: followingIds },
     })
       .populate("user")
+      .populate("reactions.user")
       .populate({ path: "post", populate: { path: "user", model: "User" } })
       .sort({ createdAt: -1 });
 
@@ -175,6 +175,53 @@ const addReaction = async (req, res) => {
   }
 };
 
+const addReactionOnSharePost = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const userId = req.user?._id;
+
+    if (!req.body.type) {
+      await SharePostModel.findOneAndUpdate(
+        { _id: postId, "reactions.user": userId },
+        { $pull: { reactions: { user: userId } } }
+      );
+
+      return res.status(200).send({ message: "Remove reaction" });
+    }
+
+    const existingReaction = await SharePostModel.findOneAndUpdate(
+      {
+        _id: postId,
+        "reactions.user": userId,
+        "reactions.type": req.body.type,
+      },
+      { $set: { "reactions.$.type": req.body.type } },
+      { new: true }
+    );
+    console.log("This is from post con 183: ", userId);
+
+    if (existingReaction) {
+      return res.status(200).send(existingReaction);
+    } else {
+      await SharePostModel.findOneAndUpdate(
+        { _id: postId, "reactions.user": userId },
+        { $pull: { reactions: { user: userId } } },
+        { new: true }
+      );
+
+      await SharePostModel.findByIdAndUpdate(
+        postId,
+        { $push: { reactions: { type: req.body.type, user: userId } } },
+        { new: true, upsert: true }
+      );
+    }
+
+    return res.status(200).send({ message: "post react added!" });
+  } catch (error) {
+    res.status(500).send({ message: "Internal server error", success: false });
+  }
+};
+
 const deletePost = async (req, res) => {
   try {
     const postId = req.params.postId;
@@ -205,4 +252,5 @@ export {
   getPostsFIds,
   createPostShare,
   addReaction,
+  addReactionOnSharePost,
 };

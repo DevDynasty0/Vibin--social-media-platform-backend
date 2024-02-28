@@ -214,8 +214,8 @@ const googleLogin = asyncHandler(async (req, res) => {
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
-  await User.findByIdAndUpdate(
-    req.user._id,
+  const user = await User.findByIdAndUpdate(
+    req.params.userId,
     {
       $unset: {
         refreshToken: 1,
@@ -226,15 +226,8 @@ const logOutUser = asyncHandler(async (req, res) => {
     }
   );
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-
-  return res
-    .status(200)
-    .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User Logged Out."));
+  res.clearCookie("refreshToken");
+  res.status(200).send({ user, message: "User logged out!" });
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -265,7 +258,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     };
 
     const accessToken = await user.generateAccessToken();
-    console.log("this is from refreshToken 271 lines: ", accessToken);
 
     return res
       .status(200)
