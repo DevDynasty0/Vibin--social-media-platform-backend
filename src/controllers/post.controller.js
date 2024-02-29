@@ -5,11 +5,13 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const createPost = async (req, res) => {
   try {
-    const { caption, contentType, user, postType } = req.body;
+    const { caption, contentType, user, postType ,isImageUrl,postContent:imageUrl} = req.body;
+    console.log('postbody',req.body);
 
     // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
     const postContentLocalPath = req.file?.path || "";
-    const postContent = await uploadOnCloudinary(postContentLocalPath);
+    const postContent = await uploadOnCloudinary(postContentLocalPath,isImageUrl,imageUrl);
+  
     const newPost = await PostModel.create({
       caption,
       contentType,
