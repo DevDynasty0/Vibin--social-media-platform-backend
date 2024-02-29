@@ -16,7 +16,7 @@ const reportSchema = new Schema({
     },
     reason:{
         type: String,
-        enum:['Spam','Harassment','Inappropriate content','Violence','Others'],
+        enum:['Spam','Harassment','Inappropriate content','Violence','Fake account','Others'],
         required: true
     },
     description:{
