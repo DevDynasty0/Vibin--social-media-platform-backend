@@ -40,7 +40,7 @@ vibinAIRouter.route("/genarate-image").post(async (req, res) => {
             n: 1,
             // size: "1024x1024",
         });
-
+       
 
         console.log(response);
         return res.send({
