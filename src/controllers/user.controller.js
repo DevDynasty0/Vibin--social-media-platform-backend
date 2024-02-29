@@ -100,11 +100,12 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res
     .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, options)
     .status(201)
     .json(
       new ApiResponse(
         200,
-        { user: createdUser, accessToken },
+        { user: createdUser },
         "User registered successfully"
       )
     );
@@ -149,12 +150,12 @@ const loginUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, options)
     .json(
       new ApiResponse(
         200,
         {
           user: loggedInUser,
-          accessToken,
         },
         "User logged in successfully."
       )
@@ -204,10 +205,11 @@ const googleLogin = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, options)
     .json(
       new ApiResponse(
         200,
-        { user: createdUser, accessToken },
+        { user: createdUser },
         "User registered successfully signin google."
       )
     );
@@ -227,6 +229,7 @@ const logOutUser = asyncHandler(async (req, res) => {
   );
 
   res.clearCookie("refreshToken");
+  res.clearCookie("accessToken");
   res.status(200).send({ user, message: "User logged out!" });
 });
 
@@ -262,13 +265,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     return res
       .status(200)
       .cookie("refreshToken", incomingRefreshToken, options)
-      .json(
-        new ApiResponse(
-          200,
-          { accessToken, user },
-          "Access token refresh success."
-        )
-      );
+      .cookie("accessToken", accessToken, options)
+      .json(new ApiResponse(200, { user }, "Access token refresh success."));
   } catch (error) {
     throw new ApiError(401, error?.message || "Invalid access token");
   }

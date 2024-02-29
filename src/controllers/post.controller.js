@@ -1,48 +1,47 @@
 import { Following } from "../models/follow.model.js";
 import { PostModel } from "../models/post.model.js";
-import SharePostModel from "../models/share.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const createPost = async (req, res) => {
   try {
-    const { caption, contentType, user, postType } = req.body;
-
+    const { caption, contentType, user, postType, type, post, postId } =
+      req.body;
     // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
     const postContentLocalPath = req.file?.path || "";
     const postContent = await uploadOnCloudinary(postContentLocalPath);
-    const newPost = await PostModel.create({
-      caption,
-      contentType,
-      postType,
-      user,
-      postContent: postContent?.url || "",
-    });
 
-    // const postModel = new PostModel(body);
-    // const result = await PostModel.save();
-    // res.status(201).send(result);
-    return res.status(200).send(newPost);
+    if (type === "post") {
+      const newPost = await PostModel.create({
+        type,
+        caption,
+        contentType,
+        postType,
+        user,
+        postContent: postContent?.url || "",
+      });
+      return res
+        .status(200)
+        .send({ message: "Successfully created post.", newPost });
+    }
+    if (type === "shared") {
+      const newPost = await PostModel.create({
+        type,
+        post,
+        user,
+      });
+      await PostModel.updateOne(
+        { _id: postId || post },
+        { $inc: { shares: 1 } }
+      );
+      return res.status(200).send({ message: "Post shared success.", newPost });
+    }
+    return res
+      .status(200)
+      .send({ message: "Internal server error", success: false });
   } catch (error) {
     return res
       .status(500)
       .send({ message: "Internal server error", success: false });
-  }
-};
-
-const createPostShare = async (req, res) => {
-  try {
-    const postId = req.params.postId;
-    const userId = req.user._id;
-    const sharePost = await SharePostModel.create({
-      post: postId,
-      user: userId,
-    });
-    const findPost = await PostModel.findOne({ _id: postId });
-    await PostModel.updateOne({ _id: postId }, { shares: findPost.shares + 1 });
-
-    res.status(200).send(sharePost);
-  } catch (error) {
-    res.status(500).send({ message: "Internal server error", success: false });
   }
 };
 
@@ -57,28 +56,12 @@ const getPosts = async (req, res) => {
     const postResults = await PostModel.find({
       user: userId,
     })
-      .sort({ createdAt: -1 })
       .populate("user")
-      .populate("reactions.user");
-
-    const sharePostResults = await SharePostModel.find({
-      user: userId,
-    })
-      .sort({ createdAt: -1 })
-      .populate("user")
+      .populate({ path: "post", populate: { path: "user", model: "User" } })
       .populate("reactions.user")
-      .populate({ path: "post", populate: { path: "user", model: "User" } });
+      .sort({ createdAt: -1 });
 
-    const combinedResults = [...postResults, ...sharePostResults];
-
-    // Sort the combined array based on timestamps
-    combinedResults.sort((a, b) => {
-      const timestampA = a.createdAt || a.createdAt;
-      const timestampB = b.createdAt || b.createdAt;
-      return new Date(timestampB) - new Date(timestampA);
-    });
-
-    return res.status(200).json(combinedResults);
+    return res.status(200).json(postResults);
   } catch (error) {
     return res.status(500).send("I am already died");
   }
@@ -102,28 +85,10 @@ const getPostsFIds = async (req, res) => {
       user: { $in: followingIds },
     })
       .populate("user")
-      .populate("reactions.user")
-      .sort({ createdAt: -1 });
-
-    const sharePostResult = await SharePostModel.find({
-      user: { $in: followingIds },
-    })
-      .populate("user")
-      .populate("reactions.user")
       .populate({ path: "post", populate: { path: "user", model: "User" } })
+      .populate("reactions.user")
       .sort({ createdAt: -1 });
-
-    // Merge the results of both queries into a single array
-    const combinedResults = [...results, ...sharePostResult];
-
-    // Sort the combined array based on timestamps
-    combinedResults.sort((a, b) => {
-      const timestampA = a.createdAt || a.createdAt;
-      const timestampB = b.createdAt || b.createdAt;
-      return new Date(timestampB) - new Date(timestampA);
-    });
-
-    return res.status(200).json(combinedResults);
+    return res.status(200).json(results);
   } catch (error) {
     return res.status(500).send("Internal Server Error");
   }
@@ -175,53 +140,6 @@ const addReaction = async (req, res) => {
   }
 };
 
-const addReactionOnSharePost = async (req, res) => {
-  try {
-    const postId = req.params.postId;
-    const userId = req.user?._id;
-
-    if (!req.body.type) {
-      await SharePostModel.findOneAndUpdate(
-        { _id: postId, "reactions.user": userId },
-        { $pull: { reactions: { user: userId } } }
-      );
-
-      return res.status(200).send({ message: "Remove reaction" });
-    }
-
-    const existingReaction = await SharePostModel.findOneAndUpdate(
-      {
-        _id: postId,
-        "reactions.user": userId,
-        "reactions.type": req.body.type,
-      },
-      { $set: { "reactions.$.type": req.body.type } },
-      { new: true }
-    );
-    console.log("This is from post con 183: ", userId);
-
-    if (existingReaction) {
-      return res.status(200).send(existingReaction);
-    } else {
-      await SharePostModel.findOneAndUpdate(
-        { _id: postId, "reactions.user": userId },
-        { $pull: { reactions: { user: userId } } },
-        { new: true }
-      );
-
-      await SharePostModel.findByIdAndUpdate(
-        postId,
-        { $push: { reactions: { type: req.body.type, user: userId } } },
-        { new: true, upsert: true }
-      );
-    }
-
-    return res.status(200).send({ message: "post react added!" });
-  } catch (error) {
-    res.status(500).send({ message: "Internal server error", success: false });
-  }
-};
-
 const deletePost = async (req, res) => {
   try {
     const postId = req.params.postId;
@@ -245,12 +163,4 @@ const deletePost = async (req, res) => {
   }
 };
 
-export {
-  createPost,
-  getPosts,
-  deletePost,
-  getPostsFIds,
-  createPostShare,
-  addReaction,
-  addReactionOnSharePost,
-};
+export { createPost, getPosts, deletePost, getPostsFIds, addReaction };
