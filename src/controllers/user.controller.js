@@ -215,8 +215,9 @@ const googleLogin = asyncHandler(async (req, res) => {
     );
 });
 
+
 const logOutUser = asyncHandler(async (req, res) => {
-  const user = await User.findByIdAndUpdate(
+  const findUser = User.findByIdAndUpdate(
     req.user._id,
     {
       $unset: {
@@ -227,10 +228,16 @@ const logOutUser = asyncHandler(async (req, res) => {
       new: true,
     }
   );
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
 
-  res.clearCookie("refreshToken");
-  res.clearCookie("accessToken");
-  res.status(200).send({ user, message: "User logged out!" });
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User Logged Out."));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -272,16 +279,18 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
+
 const getCurrentUser = asyncHandler(async (req, res) => {
   const user = await User.findById({ _id: req.user._id });
 
   if (!user) {
     throw new ApiError(401, "Unauthorized access.");
   }
+  const {accessToken} = req.cookies;
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { user }, "Current user fetched successfully"));
+    .json(new ApiResponse(200, { user , accessToken}, "Current user fetched successfully"));
 });
 
 const getSuggestedUsers = asyncHandler(async (req, res) => {
