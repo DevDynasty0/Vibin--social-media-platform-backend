@@ -32,7 +32,7 @@ connectDB()
     const io = new Server(vibinServer, {
       pingTimeout: 60000,
       cors: {
-        origin: process.env.CORS_ORIGIN,
+        origin: [process.env.CORS_ORIGIN,process.env.CORS_ORIGIN_DEV]
       },
     });
 
