@@ -72,4 +72,136 @@ const getSuspendedUsers = async (req, res) => {
   }
 };
 
-export { getAllUsers, totalPostsCount, suspendUser, getSuspendedUsers };
+const getUserGrowthChartData = async (req, res) => {
+  try {
+    const currentDate = new Date();
+
+    const result = await User.aggregate([
+      {
+        $addFields: {
+          weekAgo: {
+            $dateDiff:
+            {
+              startDate: "$createdAt",
+              endDate: currentDate,
+              unit: "week"
+            }
+          }
+        }
+      },
+      {
+        $match: {
+          weekAgo: {
+            $lte: 6
+          }
+        }
+      }
+      ,
+      {
+        $group: {
+          _id: "$weekAgo",
+          userJoined: { $sum: 1 },
+
+        }
+      },
+      { $sort: { _id: -1 } }
+
+      // {
+      //   // $project:
+      //   // {
+      //   //   weekAgo: 1
+      //   //   // month: { $month: "$createdAt" },
+      //   //   // day: { $dayOfMonth: "$createdAt" },
+      //   //   // hour: { $hour: "$date" },
+      //   //   // minutes: { $minute: "$date" },
+      //   //   // seconds: { $second: "$date" },
+      //   //   // milliseconds: { $millisecond: "$date" },
+      //   //   // dayOfYear: { $dayOfYear: "$date" },
+      //   //   // dayOfWeek: { $dayOfWeek: "$date" },
+      //   //   // week: { $week: "$date" }
+      //   // }
+      // }
+
+
+    ])
+
+    return res.send(result)
+  } catch (error) {
+    console.log(error);
+  }
+};
+const getPostRateChartData = async (req, res) => {
+  try {
+    const currentDate = new Date();
+
+    const result = await PostModel.aggregate([
+      {
+        $addFields: {
+          weekAgo: {
+            $dateDiff:
+            {
+              startDate: "$createdAt",
+              endDate: currentDate,
+              unit: "week"
+            }
+          }
+        }
+      },
+      {
+        $match: {
+          weekAgo: {
+            $lte: 6
+          }
+        }
+      }
+      ,
+      {
+        $group: {
+          _id: "$weekAgo",
+          totalPosts: { $sum: 1 },
+
+        }
+      },
+      { $sort: { _id: -1 } }
+
+
+    ])
+
+    return res.send(result)
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getPostTypeChartData = async (req, res) => {
+  try {
+
+    const result = await PostModel.aggregate([
+      {
+        $match: {
+          contentType: {
+            "$ne": null
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$contentType",
+          total: { $sum: 1 },
+
+        }
+      },
+      { $sort: { _id: -1 } }
+
+
+
+    ])
+
+    return res.send(result)
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+export { getAllUsers, totalPostsCount, suspendUser, getSuspendedUsers, getUserGrowthChartData, getPostRateChartData, getPostTypeChartData };
