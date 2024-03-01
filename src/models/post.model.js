@@ -2,6 +2,14 @@ import mongoose, { Schema } from "mongoose";
 
 const postSchema = new Schema(
   {
+    type: {
+      type: String,
+      enum: ["post", "shared"],
+    },
+    post: {
+      type: Schema.Types.ObjectId,
+      ref: "Post",
+    },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",

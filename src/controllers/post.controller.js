@@ -1,27 +1,43 @@
 import { Following } from "../models/follow.model.js";
 import { PostModel } from "../models/post.model.js";
-import SharePostModel from "../models/share.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const createPost = async (req, res) => {
   try {
-    const { caption, contentType, user, postType } = req.body;
-
+    const { caption, contentType, user, postType, type, post, postId } =
+      req.body;
     // get the file paths or empty strings if no files are present [nullish coalescing operator (??)]
     const postContentLocalPath = req.file?.path || "";
     const postContent = await uploadOnCloudinary(postContentLocalPath);
-    const newPost = await PostModel.create({
-      caption,
-      contentType,
-      postType,
-      user,
-      postContent: postContent?.url || "",
-    });
 
-    // const postModel = new PostModel(body);
-    // const result = await PostModel.save();
-    // res.status(201).send(result);
-    return res.status(200).send(newPost);
+    if (type === "post") {
+      const newPost = await PostModel.create({
+        type,
+        caption,
+        contentType,
+        postType,
+        user,
+        postContent: postContent?.url || "",
+      });
+      return res
+        .status(200)
+        .send({ message: "Successfully created post.", newPost });
+    }
+    if (type === "shared") {
+      const newPost = await PostModel.create({
+        type,
+        post,
+        user,
+      });
+      await PostModel.updateOne(
+        { _id: postId || post },
+        { $inc: { shares: 1 } }
+      );
+      return res.status(200).send({ message: "Post shared success.", newPost });
+    }
+    return res
+      .status(200)
+      .send({ message: "Internal server error", success: false });
   } catch (error) {
     return res
       .status(500)
@@ -29,26 +45,9 @@ const createPost = async (req, res) => {
   }
 };
 
-const createPostShare = async (req, res) => {
-  try {
-    const postId = req.params.postId;
-    const userId = req.user._id;
-    const sharePost = await SharePostModel.create({
-      post: postId,
-      user: userId,
-    });
-    const findPost = await PostModel.findOne({ _id: postId });
-    await PostModel.updateOne({ _id: postId }, { shares: findPost.shares + 1 });
-
-    res.status(200).send(sharePost);
-  } catch (error) {
-    res.status(500).send({ message: "Internal server error", success: false });
-  }
-};
-
 const getPosts = async (req, res) => {
   const userId = req.params.userId;
-  
+
   if (!userId) {
     return res.status(400).send("User ID not available in the request.");
   }
@@ -57,29 +56,12 @@ const getPosts = async (req, res) => {
     const postResults = await PostModel.find({
       user: userId,
     })
-      .sort({ createdAt: -1 })
       .populate("user")
-      .populate("reactions.user");
-     
-    const sharePostResults = await SharePostModel.find({
-      user: userId,
-    })
-      .sort({ createdAt: -1 })
-      .populate("user")
-      // .populate("reactions.user")
-      .populate({ path: "post", populate: { path: "user", model: "User" } });
-    // Merge the results of both queries into a single array
-    console.log(sharePostResults, "shared post___________________________");
-    const combinedResults = [...postResults, ...sharePostResults];
+      .populate({ path: "post", populate: { path: "user", model: "User" } })
+      .populate("reactions.user")
+      .sort({ createdAt: -1 });
 
-    // Sort the combined array based on timestamps
-    combinedResults.sort((a, b) => {
-      const timestampA = a.createdAt || a.createdAt;
-      const timestampB = b.createdAt || b.createdAt;
-      return new Date(timestampB) - new Date(timestampA);
-    });
-
-    return res.status(200).json(combinedResults);
+    return res.status(200).json(postResults);
   } catch (error) {
     return res.status(500).send("I am already died");
   }
@@ -103,27 +85,10 @@ const getPostsFIds = async (req, res) => {
       user: { $in: followingIds },
     })
       .populate("user")
+      .populate({ path: "post", populate: { path: "user", model: "User" } })
       .populate("reactions.user")
       .sort({ createdAt: -1 });
-
-    const sharePostResult = await SharePostModel.find({
-      user: { $in: followingIds },
-    })
-      .populate("user")
-      .populate({ path: "post", populate: { path: "user", model: "User" } })
-      .sort({ createdAt: -1 });
-
-    // Merge the results of both queries into a single array
-    const combinedResults = [...results, ...sharePostResult];
-
-    // Sort the combined array based on timestamps
-    combinedResults.sort((a, b) => {
-      const timestampA = a.createdAt || a.createdAt;
-      const timestampB = b.createdAt || b.createdAt;
-      return new Date(timestampB) - new Date(timestampA);
-    });
-
-    return res.status(200).json(combinedResults);
+    return res.status(200).json(results);
   } catch (error) {
     return res.status(500).send("Internal Server Error");
   }
@@ -198,11 +163,4 @@ const deletePost = async (req, res) => {
   }
 };
 
-export {
-  createPost,
-  getPosts,
-  deletePost,
-  getPostsFIds,
-  createPostShare,
-  addReaction,
-};
+export { createPost, getPosts, deletePost, getPostsFIds, addReaction };

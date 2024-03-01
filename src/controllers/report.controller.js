@@ -27,7 +27,7 @@ const reportPost = async(req,res) =>{
             description,
             reportType
         })
-        return res.status(200).json({newReport,message:'Post reported successfully'})
+        return res.status(200).json({success:true,newReport,message:'Post reported successfully'})
 
     } catch (error) {
         console.log(error);

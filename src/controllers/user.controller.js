@@ -100,11 +100,12 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res
     .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, options)
     .status(201)
     .json(
       new ApiResponse(
         200,
-        { user: createdUser, accessToken },
+        { user: createdUser },
         "User registered successfully"
       )
     );
@@ -149,12 +150,12 @@ const loginUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, options)
     .json(
       new ApiResponse(
         200,
         {
           user: loggedInUser,
-          accessToken,
         },
         "User logged in successfully."
       )
@@ -204,18 +205,19 @@ const googleLogin = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, options)
     .json(
       new ApiResponse(
         200,
-        { user: createdUser, accessToken },
+        { user: createdUser },
         "User registered successfully signin google."
       )
     );
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
-  await User.findByIdAndUpdate(
-    req.user._id,
+  const user = await User.findByIdAndUpdate(
+    req.params.userId,
     {
       $unset: {
         refreshToken: 1,
@@ -226,15 +228,9 @@ const logOutUser = asyncHandler(async (req, res) => {
     }
   );
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-
-  return res
-    .status(200)
-    .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User Logged Out."));
+  res.clearCookie("refreshToken");
+  res.clearCookie("accessToken");
+  res.status(200).send({ user, message: "User logged out!" });
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -265,18 +261,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     };
 
     const accessToken = await user.generateAccessToken();
-    console.log("this is from refreshToken 271 lines: ", accessToken);
 
     return res
       .status(200)
       .cookie("refreshToken", incomingRefreshToken, options)
-      .json(
-        new ApiResponse(
-          200,
-          { accessToken, user },
-          "Access token refresh success."
-        )
-      );
+      .cookie("accessToken", accessToken, options)
+      .json(new ApiResponse(200, { user }, "Access token refresh success."));
   } catch (error) {
     throw new ApiError(401, error?.message || "Invalid access token");
   }
