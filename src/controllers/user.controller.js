@@ -217,7 +217,7 @@ const googleLogin = asyncHandler(async (req, res) => {
 
 const logOutUser = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
-    req.params.userId,
+    req.user._id,
     {
       $unset: {
         refreshToken: 1,

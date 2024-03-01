@@ -41,7 +41,7 @@ router.route("/register").post(
 
 router.route("/login").post(loginUser);
 router.route("/google-login").post(googleLogin);
-router.route("/logout/:userId").post(logOutUser);
+router.route("/logout").post(verifyToken,logOutUser);
 
 router.route("/current-user").get(verifyToken, getCurrentUser);
 
