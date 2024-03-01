@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getAllUsers, getSuspendedUsers, suspendUser, totalPostsCount } from "../controllers/adminController.js";
+import { getAllUsers, getPostRateChartData, getPostTypeChartData, getSuspendedUsers, getUserGrowthChartData, suspendUser, totalPostsCount } from "../controllers/adminController.js";
 import { getReportedPosts, getReportedUsers, getTotalReportsCount } from "../controllers/report.controller.js";
 // import { verifyToken } from "../middelwares/auth.middleware.js";
 // import verifyAdmin from "../middelwares/verifyAdmin.middleware.js";
