@@ -480,7 +480,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
         bio: 1,
         religion: 1,
         contactNumber: 1,
-        // followingTo:1
+        followingTo:1
       },
     },
   ]);
