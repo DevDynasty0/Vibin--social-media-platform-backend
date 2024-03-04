@@ -441,8 +441,11 @@ const getUserProfile = asyncHandler(async (req, res) => {
         localField: "_id",
         foreignField: "follower",
         as: "followingTo",
+        
       },
+
     },
+   
     {
       $addFields: {
         followersCount: {
@@ -477,6 +480,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
         bio: 1,
         religion: 1,
         contactNumber: 1,
+        // followingTo:1
       },
     },
   ]);
