@@ -45,7 +45,7 @@ router.route("/logout/:userId").post(logOutUser);
 
 router.route("/current-user").get(verifyToken, getCurrentUser);
 
-router.route("/refresh-token").post(refreshAccessToken);
+router.route("/refresh-token").get(refreshAccessToken);
 router.route("/suggested-users").get(verifyToken, getSuggestedUsers);
 router.route("/follow-user").post(verifyToken, followUser);
 router.route("/get-following-users").get(verifyToken, getFollowings);
