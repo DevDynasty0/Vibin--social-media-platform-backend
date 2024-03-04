@@ -11,22 +11,69 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
+    userName: {
+      type: String,
+      lowercase: true,
+      trim: true,
+    },
     fullName: {
       type: String,
       required: true,
       trim: true,
       index: true,
     },
+    dob: {
+      type: Date,
+      trim: true,
+    },
+    university: {
+      type: String,
+      trim: true,
+    },
+    address: {
+      type: String,
+      trim: true,
+    },
+    extraEmail: {
+      type: String,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    religion: {
+      type: String,
+    },
     avatar: {
       type: String, //cloudinary url
       // required: true,
+      default:
+        // "https://res.cloudinary.com/dsfyrjd8b/image/upload/v1707303580/by2cegfudppucnxbwvun.png",
+        "https://asset.cloudinary.com/dtwz2gkbz/b54c075288596d77fcb8510f7fca0ea6",
     },
     coverImage: {
+      type: String, //cloudinary
+    },
+    bio: {
       type: String, //cloudinary
     },
     likeHistory: {
       type: Schema.Types.ObjectId,
       ref: "Post",
+    },
+    gender: {
+      type: String,
+    },
+    dateOfBirth: {
+      type: String,
+    },
+    address: {
+      type: String,
+    },
+    contactNumber: {
+      type: Number,
+    },
+    religion: {
+      type: String,
     },
     commentHistory: {
       type: Schema.Types.ObjectId,
@@ -38,6 +85,9 @@ const userSchema = new Schema(
     },
     refreshToken: {
       type: String,
+    },
+    isAdmin: {
+      type: Boolean,
     },
   },
   {
@@ -60,8 +110,6 @@ userSchema.methods.generateAccessToken = function () {
     {
       _id: this._id,
       email: this.email,
-      // username: this.username,
-      // fullName: this.fullName,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {

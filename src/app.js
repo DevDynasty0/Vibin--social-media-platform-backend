@@ -6,7 +6,7 @@ const app = express();
 //middleware
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    origin:[ process.env.CORS_ORIGIN,process.env.CORS_ORIGIN_DEV],
     credentials: true,
   })
 );
@@ -18,10 +18,30 @@ app.use(cookieParser());
 
 // routes import
 import userRouter from "./routes/user.routes.js";
+import commentRouter from "./routes/comment.routes.js";
 import postRouter from "./routes/post.routes.js";
+
+import settingRouter from "./routes/setting.routes.js";
+
+import chatRouter from "./routes/chat.routes.js";
+
+import adminRouter from "./routes/admin.routes.js";
+import notificationRouter from "./routes/notification.routes.js";
+import vibinAIRouter from "./routes/vibinAI.routes.js";
 
 //routes declaration
 app.use("/api/v1/users", userRouter);
-app.use("/api/v1/post", postRouter)
+app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/posts", postRouter);
+
+app.use("/api/v1/settings", settingRouter);
+
+app.use("/api/v1/chats", chatRouter);
+
+app.use("/api/v1/admin", adminRouter);
+
+app.use("/api/v1/notifications", notificationRouter);
+
+app.use("/api/v1/vibinai", vibinAIRouter);
 
 export { app };
