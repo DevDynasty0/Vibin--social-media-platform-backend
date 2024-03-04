@@ -3,8 +3,13 @@ import { PostModel } from "../models/post.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const createComment = async (req, res) => {
-  const postData = await PostModel.findOne({ _id: req.body.postId });
-  const result = await CommentModel.create(req.body);
+  const { user, post, comment } = req.body || {};
+  const postData = await PostModel.findOne({ _id: post._id });
+  const result = await CommentModel.create({
+    user,
+    postId: post._id,
+    comment,
+  });
   if (result?._id && postData?._id) {
     const createdComment = await CommentModel.findOne({
       _id: result._id,
