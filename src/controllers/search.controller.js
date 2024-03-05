@@ -20,5 +20,20 @@ const getSearchResult = async (req, res) => {
       .send({ success: "failed to get search result!", error });
   }
 };
+const searchUsers = async (req, res) => {
+  try {
+    const { query } = req.query;
 
-export { getSearchResult };
+    const users = await User.find({
+      fullName: { $regex: new RegExp(query, "i") },
+    }).select("fullName avatar");
+
+    return res.status(200).send({ users, mesage: "Fetched searched Users" });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: "failed to get searched users!", error });
+  }
+};
+
+export { getSearchResult, searchUsers };
