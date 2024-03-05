@@ -106,7 +106,8 @@ const getConversations = async (req, res) => {
         path: "participants",
         select: "fullName avatar",
       })
-      .select("participants lastMessage");
+      .select("participants lastMessage")
+      .sort({ updatedAt: -1 });
 
     // const results = await ConversationModel.aggregate([
     //   {

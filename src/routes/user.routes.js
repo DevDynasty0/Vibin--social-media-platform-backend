@@ -18,12 +18,16 @@ import {
 } from "../controllers/user.controller.js";
 import { upload } from "../middelwares/multer.middleware.js";
 import { verifyToken } from "../middelwares/auth.middleware.js";
-import { getSearchResult } from "../controllers/search.controller.js";
+import {
+  getSearchResult,
+  searchUsers,
+} from "../controllers/search.controller.js";
 import { reportPost, reportUser } from "../controllers/report.controller.js";
 
 const router = Router();
 
 router.route("/search").get(getSearchResult);
+router.route("/search-user").get(searchUsers);
 
 router.route("/register").post(
   upload.fields([
