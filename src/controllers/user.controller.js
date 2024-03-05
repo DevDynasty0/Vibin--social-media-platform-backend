@@ -234,9 +234,10 @@ const googleLogin = asyncHandler(async (req, res) => {
 });
 
 const logOutUser = async (req, res) => {
+  const userIdOriginal =new mongoose.Types.ObjectId(req?.params?.userId);
   try {
     const user = await User.findByIdAndUpdate(
-      req?.params?.userId,
+      userIdOriginal,
       {
         $unset: {
           refreshToken: 1,

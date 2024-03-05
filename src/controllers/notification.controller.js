@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { NotificationModel } from "../models/notification.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -38,17 +39,26 @@ const createNotification = asyncHandler(async (req, res) => {
 });
 
 const getNotifications = asyncHandler(async (req, res) => {
-  //  await NotificationModel.deleteMany({});
-  const notifications = await NotificationModel.find({
-    receiverId: req.params.id,
-  }).populate({
-    path: "senderId",
-    select: "avatar ",
-  });
+  try {
+    const userIdOriginal = req.params?.id;
+    //  await NotificationModel.deleteMany({});
+    console.log(userIdOriginal, "userid original");
+    const notifications = await NotificationModel.find({
+      receiverId: new mongoose.Types.ObjectId(userIdOriginal),
+    }).populate({
+      path: "senderId",
+      select: "avatar ",
+    });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, notifications, "Fetched all notifications."));
+    return res
+      .status(200)
+      .json(new ApiResponse(200, notifications, "Fetched all notifications."));
+
+  } catch (error) {
+    res.send({
+      message: error.message
+    })
+  }
 });
 
 const changeNotificationStatus = async (req, res) => {
