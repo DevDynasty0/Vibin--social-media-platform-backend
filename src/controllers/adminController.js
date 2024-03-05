@@ -80,32 +80,29 @@ const getUserGrowthChartData = async (req, res) => {
       {
         $addFields: {
           weekAgo: {
-            $dateDiff:
-            {
+            $dateDiff: {
               startDate: "$createdAt",
               endDate: currentDate,
-              unit: "week"
-            }
-          }
-        }
+              unit: "week",
+            },
+          },
+        },
       },
       {
         $match: {
-          weekAgo:{
-            $lte: 6
-          }
-        }
-      }
-      ,
+          weekAgo: {
+            $lte: 6,
+          },
+        },
+      },
       {
         $group: {
           _id: "$weekAgo",
           userJoined: { $sum: 1 },
-
-        }
+        },
       },
-      { $sort : { _id : -1 } }
-      
+      { $sort: { _id: -1 } },
+
       // {
       //   // $project:
       //   // {
@@ -121,11 +118,9 @@ const getUserGrowthChartData = async (req, res) => {
       //   //   // week: { $week: "$date" }
       //   // }
       // }
+    ]);
 
-
-    ])
-
-    return res.send(result)
+    return res.send(result);
   } catch (error) {
     console.log(error);
   }
@@ -138,36 +133,31 @@ const getPostRateChartData = async (req, res) => {
       {
         $addFields: {
           weekAgo: {
-            $dateDiff:
-            {
+            $dateDiff: {
               startDate: "$createdAt",
               endDate: currentDate,
-              unit: "week"
-            }
-          }
-        }
+              unit: "week",
+            },
+          },
+        },
       },
       {
         $match: {
-          weekAgo:{
-            $lte: 6
-          }
-        }
-      }
-      ,
+          weekAgo: {
+            $lte: 6,
+          },
+        },
+      },
       {
         $group: {
           _id: "$weekAgo",
           totalPosts: { $sum: 1 },
-
-        }
+        },
       },
-      { $sort : { _id : -1 } }
-      
-      
-    ])
+      { $sort: { _id: -1 } },
+    ]);
 
-    return res.send(result)
+    return res.send(result);
   } catch (error) {
     console.log(error);
   }
@@ -175,33 +165,35 @@ const getPostRateChartData = async (req, res) => {
 
 const getPostTypeChartData = async (req, res) => {
   try {
-    
     const result = await PostModel.aggregate([
       {
         $match: {
           contentType: {
-            "$ne": null
-          }
-        }
+            $ne: null,
+          },
+        },
       },
       {
         $group: {
           _id: "$contentType",
           total: { $sum: 1 },
-
-        }
+        },
       },
-      { $sort : { _id : -1 } }
-      
-      
+      { $sort: { _id: -1 } },
+    ]);
 
-    ])
-
-    return res.send(result)
+    return res.send(result);
   } catch (error) {
     console.log(error);
   }
 };
 
-
-export { getAllUsers, totalPostsCount, suspendUser, getSuspendedUsers, getUserGrowthChartData, getPostRateChartData, getPostTypeChartData };
+export {
+  getAllUsers,
+  totalPostsCount,
+  suspendUser,
+  getSuspendedUsers,
+  getUserGrowthChartData,
+  getPostRateChartData,
+  getPostTypeChartData,
+};

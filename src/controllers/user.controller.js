@@ -99,9 +99,15 @@ const registerUser = asyncHandler(async (req, res) => {
   };
 
   return res
-    .cookie("refreshToken", refreshToken, options)
-    .cookie("accessToken", accessToken, options)
-    .status(201)
+    .status(200)
+    .cookie("refreshToken", refreshToken, {
+      options,
+      maxAge: 10 * 24 * 60 * 60 * 1000,
+    })
+    .cookie("accessToken", accessToken, {
+      options,
+      maxAge: 2 * 24 * 60 * 60 * 1000,
+    })
     .json(
       new ApiResponse(
         200,
@@ -149,8 +155,14 @@ const loginUser = asyncHandler(async (req, res) => {
   };
   return res
     .status(200)
-    .cookie("refreshToken", refreshToken, options)
-    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, {
+      options,
+      maxAge: 10 * 24 * 60 * 60 * 1000,
+    })
+    .cookie("accessToken", accessToken, {
+      options,
+      maxAge: 2 * 24 * 60 * 60 * 1000,
+    })
     .json(
       new ApiResponse(
         200,
@@ -203,9 +215,15 @@ const googleLogin = asyncHandler(async (req, res) => {
   };
 
   return res
-    .status(201)
-    .cookie("refreshToken", refreshToken, options)
-    .cookie("accessToken", accessToken, options)
+    .status(200)
+    .cookie("refreshToken", refreshToken, {
+      options,
+      maxAge: 10 * 24 * 60 * 60 * 1000,
+    })
+    .cookie("accessToken", accessToken, {
+      options,
+      maxAge: 2 * 24 * 60 * 60 * 1000,
+    })
     .json(
       new ApiResponse(
         200,
@@ -215,30 +233,28 @@ const googleLogin = asyncHandler(async (req, res) => {
     );
 });
 
-
-const logOutUser = asyncHandler(async (req, res) => {
-  const findUser = User.findByIdAndUpdate(
-    req.user._id,
-    {
-      $unset: {
-        refreshToken: 1,
+const logOutUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req?.params?.userId,
+      {
+        $unset: {
+          refreshToken: 1,
+        },
       },
-    },
-    {
-      new: true,
-    }
-  );
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
-
-  return res
-    .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User Logged Out."));
-});
+      {
+        new: true,
+      }
+    );
+    return res
+      .clearCookie("refreshToken")
+      .clearCookie("accessToken")
+      .status(200)
+      .send({ user, message: "User logged out!" });
+  } catch (error) {
+    console.log("This is from logout controller: ", error);
+  }
+};
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req?.cookies?.refreshToken;
@@ -270,15 +286,19 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     const accessToken = await user.generateAccessToken();
 
     return res
-      .status(200)
-      .cookie("refreshToken", incomingRefreshToken, options)
-      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", incomingRefreshToken, {
+        options,
+        maxAge: 10 * 24 * 60 * 60 * 1000,
+      })
+      .cookie("accessToken", accessToken, {
+        options,
+        maxAge: 2 * 24 * 60 * 60 * 1000,
+      })
       .json(new ApiResponse(200, { user }, "Access token refresh success."));
   } catch (error) {
     throw new ApiError(401, error?.message || "Invalid access token");
   }
 });
-
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   const user = await User.findById({ _id: req.user._id });
@@ -286,11 +306,14 @@ const getCurrentUser = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(401, "Unauthorized access.");
   }
-  const {accessToken} = req.cookies;
+
+  if (user && !user?.refreshToken) {
+    throw new ApiError(401, "Unauthorized access.");
+  }
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { user , accessToken}, "Current user fetched successfully"));
+    .json(new ApiResponse(200, { user }, "Current user fetched successfully"));
 });
 
 const getSuggestedUsers = asyncHandler(async (req, res) => {
@@ -418,8 +441,11 @@ const getUserProfile = asyncHandler(async (req, res) => {
         localField: "_id",
         foreignField: "follower",
         as: "followingTo",
+        
       },
+
     },
+   
     {
       $addFields: {
         followersCount: {
@@ -454,6 +480,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
         bio: 1,
         religion: 1,
         contactNumber: 1,
+        followingTo:1
       },
     },
   ]);
