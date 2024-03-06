@@ -1,6 +1,7 @@
 import { Router } from "express";
 // import modules from OpenAI library
 import OpenAI from "openai";
+import { createVibinPost } from "../controllers/vibinPost.controller.js";
 
 
 const vibinAIRouter = Router();
@@ -53,5 +54,5 @@ vibinAIRouter.route("/genarate-image").post(async (req, res) => {
     }
 
 })
-
+vibinAIRouter.route('/post-generated-data').post(createVibinPost)
 export default vibinAIRouter;
