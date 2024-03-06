@@ -163,4 +163,43 @@ const deletePost = async (req, res) => {
   }
 };
 
-export { createPost, getPosts, deletePost, getPostsFIds, addReaction };
+const getTrendingPosts = async (req, res) => {
+  try {
+    const result = await PostModel.find({})
+      .limit(500)
+      .sort({ shares: -1, comments: -1 })
+      .populate({ path: "post", populate: { path: "user", model: "User" } })
+      .populate("user")
+      .populate("reactions.user");
+    return res.status(200).send(result);
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ message: "Internal server error", success: false });
+  }
+};
+
+const getVideos = async (req, res) => {
+  try {
+    const result = await PostModel.find({ contentType: "video" })
+      .limit(500)
+      .populate({ path: "post", populate: { path: "user", model: "User" } })
+      .populate("user")
+      .populate("reactions.user");
+    return res.status(200).send(result);
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ message: "Internal server error", success: false });
+  }
+};
+
+export {
+  createPost,
+  getPosts,
+  deletePost,
+  getPostsFIds,
+  addReaction,
+  getTrendingPosts,
+  getVideos,
+};
