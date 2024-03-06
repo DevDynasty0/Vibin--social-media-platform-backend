@@ -111,7 +111,7 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { user: createdUser },
+        { user: createdUser, accessToken },
         "User registered successfully"
       )
     );
@@ -168,6 +168,7 @@ const loginUser = asyncHandler(async (req, res) => {
         200,
         {
           user: loggedInUser,
+          accessToken,
         },
         "User logged in successfully."
       )
@@ -227,7 +228,7 @@ const googleLogin = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { user: createdUser },
+        { user: createdUser, accessToken },
         "User registered successfully signin google."
       )
     );
@@ -295,7 +296,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         options,
         maxAge: 2 * 24 * 60 * 60 * 1000,
       })
-      .json(new ApiResponse(200, { user }, "Access token refresh success."));
+      .json(
+        new ApiResponse(
+          200,
+          { user, accessToken },
+          "Access token refresh success."
+        )
+      );
   } catch (error) {
     throw new ApiError(401, error?.message || "Invalid access token");
   }
