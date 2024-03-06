@@ -41,8 +41,7 @@ const createNotification = asyncHandler(async (req, res) => {
 const getNotifications = asyncHandler(async (req, res) => {
   try {
     const userIdOriginal = req.params?.id;
-    //  await NotificationModel.deleteMany({});
-    console.log(userIdOriginal, "userid original");
+
     const notifications = await NotificationModel.find({
       receiverId: new mongoose.Types.ObjectId(userIdOriginal),
     }).populate({
@@ -53,11 +52,10 @@ const getNotifications = asyncHandler(async (req, res) => {
     return res
       .status(200)
       .json(new ApiResponse(200, notifications, "Fetched all notifications."));
-
   } catch (error) {
     res.send({
-      message: error.message
-    })
+      message: error.message,
+    });
   }
 });
 

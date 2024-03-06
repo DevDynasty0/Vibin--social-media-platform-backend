@@ -5,6 +5,8 @@ import {
   deletePost,
   getPosts,
   getPostsFIds,
+  getTrendingPosts,
+  getVideos,
 } from "../controllers/post.controller.js";
 import { upload } from "../middelwares/multer.middleware.js";
 import { verifyToken } from "../middelwares/auth.middleware.js";
@@ -24,5 +26,7 @@ postRouter.route("/reaction/:postId").patch(verifyToken, addReaction);
 postRouter.route("/savePost/:postId").patch(verifyToken, createSavePost);
 postRouter.route("/savePost").post(verifyToken, createSavePost);
 postRouter.route("/getSavePost").get(verifyToken, getSavePost);
+postRouter.route("/getTrendingPosts").get(verifyToken, getTrendingPosts);
+postRouter.route("/getVideos").get(verifyToken, getVideos);
 
 export default postRouter;

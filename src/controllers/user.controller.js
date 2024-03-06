@@ -234,7 +234,7 @@ const googleLogin = asyncHandler(async (req, res) => {
 });
 
 const logOutUser = async (req, res) => {
-  const userIdOriginal =new mongoose.Types.ObjectId(req?.params?.userId);
+  const userIdOriginal = new mongoose.Types.ObjectId(req?.params?.userId);
   try {
     const user = await User.findByIdAndUpdate(
       userIdOriginal,
@@ -442,11 +442,9 @@ const getUserProfile = asyncHandler(async (req, res) => {
         localField: "_id",
         foreignField: "follower",
         as: "followingTo",
-        
       },
-
     },
-   
+
     {
       $addFields: {
         followersCount: {
@@ -481,7 +479,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
         bio: 1,
         religion: 1,
         contactNumber: 1,
-        followingTo:1
+        followingTo: 1,
       },
     },
   ]);

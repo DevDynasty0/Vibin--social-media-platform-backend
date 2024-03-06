@@ -1,4 +1,6 @@
 import express from "express";
+import dotenv from "dotenv";
+dotenv.config({ path: "./.env" });
 import cors from "cors";
 import cookieParser from "cookie-parser";
 const app = express();
@@ -6,7 +8,7 @@ const app = express();
 //middleware
 app.use(
   cors({
-    origin:[ process.env.CORS_ORIGIN,process.env.CORS_ORIGIN_DEV],
+    origin: [process.env.CORS_ORIGIN, process.env.CORS_ORIGIN_DEV],
     credentials: true,
   })
 );
