@@ -19,6 +19,9 @@ const createPost = async (req, res) => {
         user,
         postContent: postContent?.url || "",
       });
+
+     console.log('posttttttttype dekhbo',newPost);
+
       return res
         .status(200)
         .send({ message: "Successfully created post.", newPost });
